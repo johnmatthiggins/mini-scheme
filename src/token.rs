@@ -22,7 +22,32 @@ mod token {
     }
 
     enum Token {
-        Value(Value)
-        Data(DataToken)
+        Value(LValue),
+        Expr(Vec<Token>)
+    }
+
+    pub fn to_string(LValue lVal) -> String {
+        match lVal {
+            LValue::Number(n) => n.to_string(),
+            LValue::Bool(b) => b.to_string(),
+            LValue::String(s) => format!("\"{}\"", s),
+            LValue::List(v) => {
+                let mut text: String = "(";
+
+                for (i, val) in v.enumerate() {
+                    // Lol recursion
+                    if i == 0 {
+                        text.push_str(format!("{}", to_string(val)));
+                    }
+                    else {
+                        text.push_str(format!(", {}", to_string(val)));
+                    }
+                }
+
+                text.push_str(")"); 
+
+                return text;
+            }
+        }
     }
 }
