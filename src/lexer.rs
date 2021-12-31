@@ -2,22 +2,24 @@ use std::vec::Vec;
 use std::result::Result;
 use std::collections::LinkedList;
 
-mod parse {
-    enum Tree {
-        Parent(Vec<Tree>, String),
-        Leaf(String),
-    }
-
-    pub fn parse(code: &String) -> Result<Vec<Token>, String> {
+mod lexer {
+    /**
+     * Returns all tokens in code separated into a list of strings.
+     *
+     * @param code Text that represents program.
+     * @return All tokens in text separated into a list of strings.
+     */
+    pub fn lexical_analysis(code: &String) -> Result<Vec<String>, String> {
         let is_matching = has_matching_parens(code);
 
         if is_matching {
-            let text_tokens = split_with_parens(code);
-            let string_tree = 
+            let result = Result::Ok(split_with_parens(code));
         }
         else {
-            let result = Err("Missing closing or opening parenthesis.");
+            let result = Result::Err("Missing closing or opening parenthesis.");
         }
+
+        return result;
     }
 
     fn has_matching_parens(code: &String) -> bool {
@@ -46,10 +48,5 @@ mod parse {
             .split(' ');
 
         return token_strings;
-    }
-
-    fn to_trees(tokens: &Vec<String>) -> Vec<Tree> {
-        let mut trees: Vec<Tree> = Vec::new();
-        let mut index = 0;
     }
 }
