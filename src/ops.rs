@@ -21,45 +21,6 @@ mod ops {
         }
     }
 
-    // should only take two arguments
-    pub fn le(values: &Vec<LValue>) -> Result<LValue, String> {
-        if values.len() != 2 {
-            Result::Err(format!(ARG_COUNT_ERROR, "<="));
-        }
-        else {
-            // throw type error if not numbers.
-            match (values[0], values[1]) {
-                (LValue::Number(a), LValue::Number(b)) => Result::Ok(LValue::Bool(a >= b)),
-                _ => Result::Err("'le' operator can only be applied to 'Number' values")
-            }
-        }
-    }
-
-    pub fn lt(values: &Vec<LValue>) -> Result<LValue, String> {
-        if values.len() != 2 {
-            Result::Err(format!(ARG_COUNT_ERROR, "<"));
-        }
-        else {
-            // throw type error if not numbers.
-            match (values[0], values[1]) {
-                (LValue::Number(a), LValue::Number(b)) => Result::Ok(LValue::Bool(a < b)),
-                _ => Result::Err("'lt' operator can only be applied to 'Number' values")
-        }
-    }
-
-    pub fn gt(values: &Vec<LValue>) -> Result<LValue, String> {
-        if values.len() != 2 {
-            Result::Err(format!(ARG_COUNT_ERROR, ">"));
-        }
-        else {
-            // throw type error if not numbers.
-            match (values[0], values[1]) {
-                (LValue::Number(a), LValue::Number(b)) => Result::Ok(LValue::Bool(a > b)),
-                _ => Result::Err("'gt' operator can only be applied to 'Number' values")
-            }
-        }
-    }
-
     pub fn eq(values: &Vec<LValue>) -> Result<LValue, String> {
         if values.len() != 2 {
             Result::Err(format!(ARG_COUNT_ERROR, "="));
@@ -74,7 +35,15 @@ mod ops {
                 (LValue::String(s1), LValue::String(s2))
                     => Result::Ok(LValue::Bool(s1.ne(s2)),
                 // TODO: Write case for list equality.
-                // (LValue::List(v1), LValue::List(v2)) => 
+                (LValue::List(v1), LValue::List(v2)) => {
+                    if v1.len() == v2.len() {
+                    }
+                    else {
+                        let result = Result::Ok(LValue::Bool(false));
+                    }
+
+                    return result;
+                },
                 (LValue::String(s), LValue::Number(n))
                     => Result::Ok(LValue::Bool(n.to_string.ne(s))
                 _ => Result::Ok(LValue::Bool(false));
@@ -82,16 +51,21 @@ mod ops {
         }
     }
 
-    pub fn ge(values: &Vec<LValue>) -> Result<LValue, String> {
-        if values.len() != 2 {
-            Result::Err(format!(ARG_COUNT_ERROR, ">="));
-        }
-        else {
-            // throw type error if not numbers.
-            match (values[0], values[1]) {
-                (LValue::Number(a), LValue::Number(b)) => Result::Ok(LValue::Bool(a >= b)),
-                _ => Result::Err("'ge' operator can only be applied to 'Number' values")
-            }
-        }
+    // elementary functions of math.
+
+    pub fn add(values: &Vec<LValue>) -> Result<LValue, String> {
+    }
+
+    pub fn sub(values: &Vec<LValue>) -> Result<LValue, String> {
+    }
+    
+    // Takes 0..N inputs.
+    pub fn mul(values: &Vec<LValue>) -> Result<LValue, String> {
+    }
+
+    pub fn div(values: &Vec<LValue>) -> Result<LValue, String> {
+    }
+
+    pub fn mod(values: &Vec<LValue>) -> Result<LValue, String> {
     }
 }
