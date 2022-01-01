@@ -15,3 +15,12 @@ keywords used in this implementation.
 * cons
 * car
 * cdr
+
+Along with these keywords I am adding a few elementary operators for use with
+mathematical programs.
+
+* +
+* -
+* *
+* /
+* %
