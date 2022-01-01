@@ -26,7 +26,7 @@ mod token {
         Expr(Vec<Token>)
     }
 
-    pub fn to_string(LValue lVal) -> String {
+    pub fn to_string(lVal: LValue) -> String {
         match lVal {
             LValue::Number(n) => n.to_string(),
             LValue::Bool(b) => b.to_string(),

@@ -22,6 +22,23 @@ mod lexer {
         return result;
     }
 
+    fn parse_atom(atom: &String) -> Expr {
+        if is_string(atom) {
+            let result = Atom::StringLiteral(atom);
+        }
+        else if atom.parse::<i64>().is_ok() {
+            let result = Atom::Number(from_str::<i64>(atom));
+        }
+        else if is_boolean(atom) {
+            let result = Atom::Boolean(atom == "#t");
+        }
+        else {
+            let result = Atom::Symbol(atom);
+        }
+
+        return Expr::Atom(result);
+    }
+
     fn has_matching_parens(code: &String) -> bool {
         let mut unclosed_opens = 0;
 
@@ -35,6 +52,63 @@ mod lexer {
         }
 
         return unclosed_opens == 0;
+    }
+
+    fn parse_tokens(tokens: &Vec<String>) -> Expr {
+        // recur for interior levels of expression
+        // then add them to the expression list.
+        let mut local_exprs: Vec<Expr> = Vec::new();
+        let mut current_expr: Vec<String> = Vec::new();
+        let mut inside_paren:
+
+        for (i, token) in tokens.enumerate() {
+            if i == 0 {
+                if token == "(" {
+                    current_expr = Vec::new();
+                }
+            }
+            else if token == "(" {
+                local_exprs.push();
+            }
+        }
+    }
+
+    fn is_boolean(atom: &String) -> bool {
+        // Boolean literals are '#f' and '#t'
+        // for true and false respectively.
+        let is_boolean = atom == "#f" ||  atom == "#t";
+
+        return is_boolean;
+    }
+
+    fn is_string(atom: &String) -> bool {
+        const BACKSLASH_C: char = '\\'; 
+        const QUOTE_C: char = '"';
+        let mut is_string: bool = true;
+
+        for (i, c) in atom.chars().enumerate() {
+            if i == 0 || i == atom.len() - 1 {
+                if c != QUOTE_C {
+                    is_string = false;
+                    break;
+                }
+            }
+            else if c == QUOTE_C {
+                if i == 1 {
+                    is_string = false;
+                    break;
+                }
+                else {
+                    let next_c = atom.as_bytes()[i - 1] as char;
+                    if next_c != BACKSLASH {
+                        is_string = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return is_string;
     }
 
     /**

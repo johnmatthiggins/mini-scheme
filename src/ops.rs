@@ -52,8 +52,49 @@ mod ops {
     }
 
     // elementary functions of math.
+    
+    // Accumulator function to reduce code.
+    pub fn acc(values: &Vec<LValue>, op: fn(i64, i64) -> i64) -> Result<LValue, String> {
+        if values.len() > 2 {
+            let total: i64 = 0;
+            let length = values.len();
+
+            for (i, v) in values.enumerate() {
+                if let LValue::Number(n) = v {
+                    total = op(total, n);
+
+                    if values.len() == i + 1 {
+                        let result = Result::Ok(total);
+                    }
+                }
+                else {
+                    let result = Result::Err("Cannot perform operation on non numeric type.");
+                    break;
+                }
+            }
+        }
+        else {
+            let result = Result::Err("Cannot perform operation on fewer than two operands.");
+        }
+    }
 
     pub fn add(values: &Vec<LValue>) -> Result<LValue, String> {
+        let total: i64 = 0;
+        let length = values.len();
+
+        for (i, v) in values.enumerate() {
+            if let LValue::Number(n) = v {
+                total += n;
+
+                if values.len() == i + 1 {
+                    let result = Result::Ok(total);
+                }
+            }
+            else {
+                let result = Result::Err();
+                break;
+            }
+        }
     }
 
     pub fn sub(values: &Vec<LValue>) -> Result<LValue, String> {
