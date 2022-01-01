@@ -15,6 +15,9 @@ keywords used in this implementation.
 * cons
 * car
 * cdr
+* and
+* or
+* not
 
 Along with these keywords I am adding a few elementary operators for use with
 mathematical programs.
@@ -24,3 +27,5 @@ mathematical programs.
 * \*
 * \/
 * %
+* >
+* <
