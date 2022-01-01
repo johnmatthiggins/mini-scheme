@@ -19,8 +19,8 @@ keywords used in this implementation.
 Along with these keywords I am adding a few elementary operators for use with
 mathematical programs.
 
-* +
-* -
-* *
-* /
+* \+
+* \-
+* \*
+* \/
 * %
