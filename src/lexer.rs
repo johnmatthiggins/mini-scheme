@@ -54,23 +54,51 @@ mod lexer {
         return unclosed_opens == 0;
     }
 
+    fn has_matching_parens(tokens: &Vec<String>) -> bool {
+        let mut unclosed_opens = 0;
+
+        for token in tokens {
+            if token == "(" {
+                unclosed_opens += 1;
+            }
+            else if token == ")" {
+                unclosed_opens -= 1;
+            }
+        }
+
+        return unclosed_opens == 0;
+    }
+
     fn parse_tokens(tokens: &Vec<String>) -> Expr {
         // recur for interior levels of expression
         // then add them to the expression list.
         let mut local_exprs: Vec<Expr> = Vec::new();
         let mut current_expr: Vec<String> = Vec::new();
-        let mut inside_paren:
+        let token_len = tokens.len();
 
         for (i, token) in tokens.enumerate() {
-            if i == 0 {
-                if token == "(" {
-                    current_expr = Vec::new();
+            // check if end or start token.
+            if i != 0 && i != token_len {
+                if has_matching_parens(current_expr) && current_expr.len() > 0 {
+                    // Add expression if it has been closed.
+                    let expr = parse_tokens(current_expr);
+                    local_exprs.push(expr);
+
+                    current_expr.clear();
                 }
-            }
-            else if token == "(" {
-                local_exprs.push();
+
+                current_expr.push(token);
             }
         }
+
+        if local_expr.len() > 1 {
+            let result_expr = Expr::List(local_expr);
+        }
+        else if local_expr.len() == 1 {
+            let result_expr = Expr::Atom(local_expr);
+        }
+
+        return result_expr;
     }
 
     fn is_boolean(atom: &String) -> bool {

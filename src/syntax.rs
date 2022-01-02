@@ -7,7 +7,7 @@ pub mod syntax {
    }
 
    enum Expr {
-        Vec<Expr>,
+        List(Vec<Expr>),
         Atom(Atom)
    }
 }
