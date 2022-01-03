@@ -1,13 +1,13 @@
-pub mod syntax {
-   enum Atom {
-       Boolean(bool),
-       StringLiteral(String),
-       Number(i64),
-       Symbol(String)
-   }
+use bigdecimal::BigDecimal;
 
-   enum Expr {
-        List(Vec<Expr>),
-        Atom(Atom)
-   }
+pub enum Atom {
+   Boolean(bool),
+   StringLiteral(String),
+   Number(BigDecimal),
+   Symbol(String)
+}
+
+pub enum Expr {
+    List(Vec<Expr>),
+    Atom(Atom)
 }
