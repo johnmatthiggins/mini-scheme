@@ -17,7 +17,7 @@ fn main() {
         let mut input = String::new();
         
         // Print prompt than promptly flush output to sync up.
-        print!("{}", PROMPT);
+        print!("\n{}", PROMPT);
         io::stdout().flush().unwrap();
 
         io::stdin()
@@ -25,9 +25,11 @@ fn main() {
             .ok()
             .expect("User input could not be read...");
 
-        let result = eval(&input, &mut env);
+        if input.len() > 0 {
+            let result = eval(&input, &mut env);
 
-        println!("{}", &result);
+            print!("{}", &result);
+        }
     }
 }
 

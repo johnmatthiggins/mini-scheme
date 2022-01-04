@@ -81,7 +81,6 @@ pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
     for (i, token) in tokens.iter().enumerate() {
         // check if end or start token.
         if i != 0 && i != token_len {
-            // print!("{:?} ", token);
             // If parens are equally weighted append new expression into
             if tokens_match_parens(&current_expr) && current_expr.len() > 0 {
                 let is_list = current_expr.len() > 1;
@@ -161,9 +160,8 @@ fn split_with_parens(code: &String) -> Vec<String> {
     let tokens = s1.split(' ');
 
     let mut result: Vec<String> = tokens
-        .map(|x| x.to_string())
-        .filter(|x| !x.trim()
-                .is_empty())
+        .map(|x| x.trim().to_string())
+        .filter(|x| !x.trim().is_empty())
         .collect();
     
     // If it's a single token, surround it with parentheses.
