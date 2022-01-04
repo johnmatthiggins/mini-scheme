@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::io;
 use crate::syntax::Expr;
+use crate::syntax::Atom;
 
 const PROMPT: &str = "λ ";
 
@@ -34,10 +35,31 @@ fn eval(input: &String, mut env: &HashMap<&String, Expr>) -> String {
     let tokens = lexer::lexical_analysis(input);
 
     let result = match tokens {
-        Ok(vec) => vec.iter()
-            .fold(String::new(), |acc, x| acc + " " + x),
+        Ok(vec) => print_tree(&lexer::parse_tokens(&vec)),
         Err(e) => e
     };
 
     return result;
+}
+
+fn print_tree(expr_tree: &Expr) -> String {
+    match expr_tree {
+        Expr::List(v) => v
+            .into_iter()
+            .fold("(".to_string(), |acc, x| acc + &print_tree(x))
+            + ")",
+        Expr::Atom(atom) => print_atom(&atom)
+    }
+}
+
+fn print_atom(expr_atom: &Atom) -> String {
+    match expr_atom {
+        Atom::Boolean(b) => match b {
+            true => "#t".to_string(),
+            false => "#f".to_string()
+        },
+        Atom::StringLiteral(s) => s.to_string(),
+        Atom::Number(n) => n.to_string(),
+        Atom::Symbol(s) => s.to_string()
+    }
 }

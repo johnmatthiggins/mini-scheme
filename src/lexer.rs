@@ -21,6 +21,12 @@ pub fn lexical_analysis(code: &String) -> Result<Vec<String>, String> {
     }
 }
 
+/**
+ * Parses string that represents non list value into a typed expression.
+ *
+ * @param atom Textual element of code that is not a list.
+ * @return Typed expression object containing value or symbolic name.
+ */
 fn parse_atom(atom: &String) -> Expr {
     if is_string(atom) {
         return Expr::Atom(Atom::StringLiteral(atom.to_owned()));
@@ -66,7 +72,7 @@ fn tokens_match_parens(tokens: &Vec<String>) -> bool {
     return unclosed_opens == 0;
 }
 
-fn parse_tokens(tokens: &Vec<String>) -> Expr {
+pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
     // recur for interior levels of expression
     // then add them to the expression list.
     let mut local_expr: Vec<Expr> = Vec::new();
@@ -75,13 +81,24 @@ fn parse_tokens(tokens: &Vec<String>) -> Expr {
 
     for (i, token) in tokens.iter().enumerate() {
         // check if end or start token.
-        if i != 0 && i != token_len {
-            if tokens_match_parens(&current_expr) && current_expr.len() > 0 {
-                // Add expression if it has been closed.
-                let expr = parse_tokens(&current_expr);
-                local_expr.push(expr);
+        if i != 0 && i != token_len - 1 {
+            // If parens are equally weighted append new expression into
+            if tokens_match_parens(&current_expr) {
+                let is_list = current_expr.len() > 1;
 
-                current_expr.clear();
+                if is_list {
+                    // Add expression if it has been closed.
+                    let expr = parse_tokens(&current_expr);
+                    local_expr.push(expr);
+
+                    current_expr.clear();
+                }
+                else if current_expr.len() == 1 {
+                    let expr = parse_atom(&current_expr[0]);
+                    local_expr.push(expr);
+
+                    current_expr.clear();
+                }
             }
 
             current_expr.push(token.to_owned());
@@ -92,7 +109,7 @@ fn parse_tokens(tokens: &Vec<String>) -> Expr {
         return Expr::List(local_expr);
     }
     else {
-        return local_expr.get_mut(0).unwrap().to_owned();
+        return local_expr.get(0).unwrap().to_owned();
     }
 }
 
@@ -139,9 +156,9 @@ fn is_string(atom: &String) -> bool {
  * (+ 1 (* 1 2)) => ['(', '+', '(', '*', '1', '2', ')', ')']
  */
 fn split_with_parens(code: &String) -> Vec<String> {
-    let tokens_1 = code.replace(")", " ) ");
-    let tokens_2 = tokens_1.replace("(", " ( ");
-    let token_strings = tokens_2.split(' ');
+    let s0 = code.replace(")", " ) ");
+    let s1 = s0.replace("(", " ( ");
+    let tokens = s1.split(' ');
 
-    return token_strings.map(|x| x.to_string()).collect();
+    return tokens.map(|x| x.to_string()).collect();
 }
