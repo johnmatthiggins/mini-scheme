@@ -36,7 +36,7 @@ fn eval(input: &String, mut env: &HashMap<&String, Expr>) -> String {
 
     let result = match tokens {
         Ok(vec) => print_tree(&lexer::parse_tokens(&vec)),
-        Err(e) => e
+        Err(err) => err
     };
 
     return result;
@@ -44,16 +44,13 @@ fn eval(input: &String, mut env: &HashMap<&String, Expr>) -> String {
 
 fn print_tree(expr_tree: &Expr) -> String {
     match expr_tree {
-        Expr::List(v) => v
-            .into_iter()
-            .fold("(".to_string(), |acc, x| acc + &print_tree(x))
-            + ")",
+        Expr::List(v) => print_list(v),
         Expr::Atom(atom) => print_atom(&atom)
     }
 }
 
 fn print_atom(expr_atom: &Atom) -> String {
-    match expr_atom {
+    let result = match expr_atom {
         Atom::Boolean(b) => match b {
             true => "#t".to_string(),
             false => "#f".to_string()
@@ -61,5 +58,29 @@ fn print_atom(expr_atom: &Atom) -> String {
         Atom::StringLiteral(s) => s.to_string(),
         Atom::Number(n) => n.to_string(),
         Atom::Symbol(s) => s.to_string()
+    };
+
+    return result;
+}
+
+fn print_list(expr_list: &Vec<Expr>) -> String {
+    let mut acc = String::new();
+
+    for (i, exp) in expr_list.iter().enumerate() {
+        if i == 0 {
+            acc.push('(');
+            acc.push_str(&print_tree(exp));
+            acc.push(' ');
+        }
+        else if i == expr_list.len() - 1 {
+            acc.push_str(&print_tree(exp));
+            acc.push(')');
+        }
+        else {
+            acc.push_str(&print_tree(exp));
+            acc.push(' ');
+        }
     }
+
+    return acc;
 }

@@ -1,6 +1,5 @@
 use std::vec::Vec;
 use std::result::Result;
-use std::collections::LinkedList;
 use std::str::FromStr;
 use bigdecimal::BigDecimal;
 use crate::syntax::Expr;
@@ -13,7 +12,7 @@ use crate::syntax::Atom;
  * @return All tokens in text separated into a list of strings.
  */
 pub fn lexical_analysis(code: &String) -> Result<Vec<String>, String> {
-    let is_matching = has_matching_parens(code);
+    let is_matching = parens_match_and_exist(code);
 
     match is_matching {
         true => Result::Ok(split_with_parens(code)),
@@ -42,7 +41,7 @@ fn parse_atom(atom: &String) -> Expr {
     }
 }
 
-fn has_matching_parens(code: &String) -> bool {
+fn parens_match_and_exist(code: &String) -> bool {
     let mut unclosed_opens = 0;
 
     for c in code.chars() {
@@ -81,9 +80,10 @@ pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
 
     for (i, token) in tokens.iter().enumerate() {
         // check if end or start token.
-        if i != 0 && i != token_len - 1 {
+        if i != 0 && i != token_len {
+            // print!("{:?} ", token);
             // If parens are equally weighted append new expression into
-            if tokens_match_parens(&current_expr) {
+            if tokens_match_parens(&current_expr) && current_expr.len() > 0 {
                 let is_list = current_expr.len() > 1;
 
                 if is_list {
@@ -160,5 +160,17 @@ fn split_with_parens(code: &String) -> Vec<String> {
     let s1 = s0.replace("(", " ( ");
     let tokens = s1.split(' ');
 
-    return tokens.map(|x| x.to_string()).collect();
+    let mut result: Vec<String> = tokens
+        .map(|x| x.to_string())
+        .filter(|x| !x.trim()
+                .is_empty())
+        .collect();
+    
+    // If it's a single token, surround it with parentheses.
+    if result.len() == 1 {
+        result.insert(0, "(".to_string());
+        result.push(")".to_string());
+    }
+
+    return result;
 }
