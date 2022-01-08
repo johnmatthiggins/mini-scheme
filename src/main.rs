@@ -1,17 +1,19 @@
 mod lexer;
 mod syntax;
+mod environment;
 
 use std::collections::HashMap;
 use std::io::Write;
 use std::io;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
+use crate::environment::Env;
 
 const PROMPT: &str = "λ ";
 
 fn main() {
     // Holds all the predefined functions and values for REPL session.
-    let mut env: HashMap<&String, Expr> = HashMap::new();
+    let mut env: Env = HashMap::new();
 
     loop {
         let mut input = String::new();

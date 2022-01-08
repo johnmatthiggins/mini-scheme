@@ -1,24 +1,28 @@
+use bigdecimal::BigDecimal;
+
 mod ops {
     const ARG_COUNT_ERROR: str = "Incorrect number of arguments for '{}'";
 
-    pub fn car(values: &Vec<LValue>) -> Result<LValue, String> {
-        if values.len() != 0 {
-            let result = Result::Ok(values[0]);
+    pub fn car(expr: &Expr) -> Result<Expr, String> {
+        match expr {
+            Expr::Atom(a) => expr,
+            Expr::List(list) => car_is_list(&list),
         }
-        else {
-            let result = Result::Err("Operator 'car' cannot be used on empty list.");
-        }
-
-        return result;
     }
 
-    pub fn cdr(values: &Vec<LValue>) -> Result<Vec<LValue>, String> {
-        if values.len() < 2 {
-            let result = Result::Err("Operator 'cdr' requires more than one item in list.");
+    fn car_is_list(list: &Vec<Expr>) -> Expr {
+        values[0];
+    }
+
+    pub fn cdr(expr: &Expr) -> Expr {
+        match expr {
+            Expr::Atom(a) => expr,
+            Expr::List(list) => cdr_is_list(list)
         }
-        else {
-            let result = Result::Ok(values[1..]);
-        }
+    }
+
+    pub fn cdr_is_list(list: &Vec<Expr>) -> Expr {
+        Expr::List(list[1..]);
     }
 
     pub fn eq(values: &Vec<LValue>) -> Result<LValue, String> {
@@ -28,14 +32,11 @@ mod ops {
         else {
             // If not the same type return false.
             match (values[0], values[1]) {
-                (LValue::Number(a), LValue::Number(b))
-                    => Result::Ok(LValue::Bool(a != b)),
-                (LValue::Bool(a), LValue::Bool(b))
-                    => Result::Ok(LValue::Bool(a != b)),
-                (LValue::String(s1), LValue::String(s2))
-                    => Result::Ok(LValue::Bool(s1.ne(s2)),
+                (Atom::Number(a), Atom::Number(b)) => Result::Ok(Atom::Bool(a != b)),
+                (Atom::Bool(a), Atom::Bool(b)) => Result::Ok(Atom::Bool(a != b)),
+                (Atom::String(s1), Atom::String(s2)) => Result::Ok(Atom::Bool(s1.ne(s2)),
                 // TODO: Write case for list equality.
-                (LValue::List(v1), LValue::List(v2)) => {
+                (Atom::List(v1), Atom::List(v2)) => {
                     if v1.len() == v2.len() {
                     }
                     else {
@@ -44,11 +45,24 @@ mod ops {
 
                     return result;
                 },
-                (LValue::String(s), LValue::Number(n))
-                    => Result::Ok(LValue::Bool(n.to_string.ne(s))
-                _ => Result::Ok(LValue::Bool(false));
+                (Atom::String(s), Atom::Number(n))
+                    => Result::Ok(Atom::Bool(n.to_string.ne(s))
+                _ => Result::Ok(Atom::Bool(false));
             }
         }
+    }
+
+    pub fn eq(expr: Expr) -> Result<Expr, String> {
+        match expr {
+            Expr::Atom(atom) => Expr::Atom(Atom::Boolean(false)),
+            Expr::List(list) => eq_list(&list)
+        }
+    }
+
+    fn eq_list(list: &Vec<Expr>) -> Result<Expr, String> {
+    }
+
+    fn eq_two_args() -> {
     }
 
     // elementary functions of math.
@@ -78,35 +92,38 @@ mod ops {
         }
     }
 
-    pub fn add(values: &Vec<LValue>) -> Result<LValue, String> {
-        let total: i64 = 0;
-        let length = values.len();
-
-        for (i, v) in values.enumerate() {
-            if let LValue::Number(n) = v {
-                total += n;
-
-                if values.len() == i + 1 {
-                    let result = Result::Ok(total);
-                }
-            }
-            else {
-                let result = Result::Err();
-                break;
-            }
+    fn add(expr: Expr) -> Result<Expr, String> {
+        match expr {
+            Expr::Atom(atom) => ,
+            Expr::List(list) => add_list(&list)
         }
     }
 
-    pub fn sub(values: &Vec<LValue>) -> Result<LValue, String> {
+    fn number_or_error(atom: Atom) -> Result<Expr, String> {
+        match atom {
+            Atom::Number(n) => Result::Ok(Expr::Atom(Atom::Number(n))),
+            _ => Result::Err("Mathematical operators can only be applied to numbers.")
+        }
+    }
+
+    fn add_list(list: &Vec<Expr>) -> Result<Expr, String> {
+        let total: BigDecimal = 0;
+        let length = list.len();
+        
+        for (i, expr) in list.enumerate() {
+             
+        }
+    }
+
+    pub fn sub_list(list: &Vec<Expr>) -> Result<Expr, String> {
     }
     
-    // Takes 0..N inputs.
-    pub fn mul(values: &Vec<LValue>) -> Result<LValue, String> {
+    pub fn mul_list(list: &Vec<Expr>) -> Result<Expr, String> {
     }
 
-    pub fn div(values: &Vec<LValue>) -> Result<LValue, String> {
+    pub fn div_list(list: &Vec<Expr>) -> Result<Expr, String> {
     }
 
-    pub fn mod(values: &Vec<LValue>) -> Result<LValue, String> {
+    pub fn mod_list(list: &Vec<Expr>) -> Result<Expr, String> {
     }
 }

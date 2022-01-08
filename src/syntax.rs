@@ -1,6 +1,6 @@
 use bigdecimal::BigDecimal;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Atom {
    Boolean(bool),
    StringLiteral(String),
@@ -8,7 +8,7 @@ pub enum Atom {
    Symbol(String)
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Expr {
     List(Vec<Expr>),
     Atom(Atom)
