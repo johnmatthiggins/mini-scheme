@@ -35,7 +35,7 @@ fn main() {
     }
 }
 
-fn eval(input: &String, mut env: &HashMap<&String, Expr>) -> String {
+fn eval(input: &String, mut env: &Env) -> String {
     let tokens = lexer::lexical_analysis(input);
 
     let result = match tokens {

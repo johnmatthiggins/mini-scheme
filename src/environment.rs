@@ -10,10 +10,10 @@ pub struct SymbolMapping {
 }
 
 pub trait MapSymbol {
-    fn map_symbol(&self, symbol: &String) -> Option<Expr>;
+    fn map_symbol(&self, symbol: &String) -> Option<&Expr>;
 }
 
-pub impl MapSymbol for Env {
+impl MapSymbol for Env {
     fn map_symbol(&self, symbol: &String) -> Option<&Expr> {
         return self.get(symbol);
     }
