@@ -28,22 +28,11 @@ fn main() {
             .expect("User input could not be read...");
 
         if input.len() > 0 {
-            let result = eval(&input, &mut env);
+            let result = env.eval(&input);
 
             print!("{}", &result);
         }
     }
-}
-
-fn eval(input: &String, mut env: &Env) -> String {
-    let tokens = lexer::lexical_analysis(input);
-
-    let result = match tokens {
-        Ok(vec) => print_tree(&lexer::parse_tokens(&vec)),
-        Err(err) => err
-    };
-
-    return result;
 }
 
 fn print_tree(expr_tree: &Expr) -> String {
