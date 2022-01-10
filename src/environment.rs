@@ -13,9 +13,9 @@ pub struct SymbolMapping {
 pub trait EnvTrait {
     fn map_symbol(&self, symbol: &String) -> Option<&Expr>;
     fn eval(&mut self, input: &String) -> Result<Expr, String>;
-    fn eval_list(list: &Vec<Expr>) -> Result<Expr, String>;
+    fn eval_list(&mut self, list: &Vec<Expr>) -> Result<Expr, String>;
     fn eval_car_cdr(&mut self, car: Atom, cdr: &Vec<Expr>) -> Result<Expr, String>;
-    fn apply(&mut self, name: &String, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn apply(&mut self, func: &String, args: &Vec<Expr>) -> Result<Expr, String>;
     fn simplify(&mut self, expr: &Expr) -> Result<Expr, String>;
 }
 
@@ -24,16 +24,15 @@ impl EnvTrait for Env {
         return self.get(symbol);
     }
 
-    fn eval(&mut self, input: &String) -> Result<Expr, String>{
-        let tokens = lexer::lexical_analysis(input);
-        let ast = lexer::parse_tokens(&tokens);
+    fn eval(&mut self, input: &String) -> Result<Expr, String> {
+        let ast = lexer::lexical_analysis(input)
+            .map(|x| lexer::parse_tokens(&x))
+            .and_then(|x| self.simplify(&x));
 
-        let result = self.simplify(&ast);
-        
-        return result;
+        return ast;
     }
 
-    fn eval_list(list: &Vec<Expr>) -> Result<Expr, String> {
+    fn eval_list(&mut self, list: &Vec<Expr>) -> Result<Expr, String> {
         // Evaluate list expression.
         let mut simplified_list:
             Vec<Result<Expr, String>> = Vec::new();
@@ -43,32 +42,37 @@ impl EnvTrait for Env {
         match car {
             Some(expr) => match expr {
                 Expr::Atom(atom)
-                    => eval_car_cdr(atom, list[1..].to_vec()),
+                    => self.eval_car_cdr(atom.to_owned(), &list[1..].to_vec()),
                 Expr::List(list)
-                    => Result::Err("First token in list must be function name.".to_string()
-            }
+                    => Result::Err("First token in list must be function name.".to_string())
+            },
             None => Result::Err("Empty list is not a valid token.".to_string())
         }
     }
 
     fn eval_car_cdr(&mut self, car: Atom, cdr: &Vec<Expr>) -> Result<Expr, String> {
         match car {
-            Atom::Symbol(name) => apply(car, cdr),
+            Atom::Symbol(name) => self.apply(&name, cdr),
             _ => Result::Err("First token in list must be function name.".to_string())
         }
     }
 
-    fn apply(&mut self, name: &String, args: &Vec<Expr>) -> Result<Expr, String> {
+    fn apply(&mut self, func: &String, args: &Vec<Expr>) -> Result<Expr, String> {
         // Match functions to their name and return a function not found error
         // if it doesn't exist in the environment or in built in functions.
-        return Result::Err("Good job! You reached the end of the level!".to_string());
+        // return Result::Err("Good job! You reached the end of the level!".to_string());
+        
+        match name {
+            ""
+            _ => Result::Err("Function name not recognized.")
+        }
     }
 
     fn simplify(&mut self, expr: &Expr) -> Result<Expr, String> {
         match expr {
-            Expr::List(list) => eval_list(self, list),
+            Expr::List(list) => self.eval_list(list),
             // Don't worry about atoms right now.
-            Expr::Atom(atom) => Result::Ok(Expr::Atom(atom))
+            Expr::Atom(atom) => Result::Ok(Expr::Atom(atom.to_owned()))
         }
     }
 }
