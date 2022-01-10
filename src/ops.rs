@@ -1,6 +1,6 @@
 use bigdecimal::BigDecimal;
 
-mod ops {
+trait EnvOps {
     // Return first element of list or just empty.
     pub fn car(expr: &Expr) -> Result<Expr, String> {
         match expr {
@@ -43,12 +43,13 @@ mod ops {
         let length = list.len();
         
         for (i, expr) in list.enumerate() {
+            let simple_tree = 
         }
     }
 
     pub fn sub_list(args: &Vec<Expr>) {
     }
-    
+
     pub fn mul_list(list: &Vec<Expr>) {
     }
 

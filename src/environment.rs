@@ -63,7 +63,7 @@ impl EnvTrait for Env {
         // return Result::Err("Good job! You reached the end of the level!".to_string());
         
         match name {
-            ""
+            "+" => ops::add(args),
             _ => Result::Err("Function name not recognized.")
         }
     }
