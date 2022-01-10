@@ -5,10 +5,10 @@ use crate::syntax::Atom;
 
 pub type Env = HashMap<String, Expr>;
 
-pub struct SymbolMapping {
-    name: String,
-    expr: Atom
-}
+// pub struct SymbolMapping {
+//     name: String,
+//     expr: Atom
+// }
 
 pub trait EnvTrait {
     fn map_symbol(&self, symbol: &String) -> Option<&Expr>;
