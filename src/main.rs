@@ -7,6 +7,7 @@ use std::io::Write;
 use std::io;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
+use crate::environment::EnvTrait;
 use crate::environment::Env;
 
 const PROMPT: &str = "λ ";
@@ -30,7 +31,12 @@ fn main() {
         if input.len() > 0 {
             let result = env.eval(&input);
 
-            print!("{}", &result);
+            let output = match result {
+                Ok(expr) => print_tree(&expr),
+                Err(msg) => msg
+            };
+
+            print!("{}", &output);
         }
     }
 }
