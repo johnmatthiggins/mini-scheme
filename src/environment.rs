@@ -1,7 +1,9 @@
 use std::collections::HashMap;
+use core::ops::Add;
 use crate::lexer;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
+use crate::ops::EnvOps;
 
 pub type Env = HashMap<String, Expr>;
 
@@ -33,10 +35,6 @@ impl EnvTrait for Env {
     }
 
     fn eval_list(&mut self, list: &Vec<Expr>) -> Result<Expr, String> {
-        // Evaluate list expression.
-        let mut simplified_list:
-            Vec<Result<Expr, String>> = Vec::new();
-
         let car = list.first();
 
         match car {
@@ -62,9 +60,9 @@ impl EnvTrait for Env {
         // if it doesn't exist in the environment or in built in functions.
         // return Result::Err("Good job! You reached the end of the level!".to_string());
         
-        match name {
-            "+" => ops::add(args),
-            _ => Result::Err("Function name not recognized.")
+        match func.as_str() {
+            "+" => self.add(args),
+            _ => Result::Err("Function name not recognized.".to_string())
         }
     }
 
