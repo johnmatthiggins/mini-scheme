@@ -62,6 +62,7 @@ impl EnvTrait for Env {
         // return Result::Err("Good job! You reached the end of the level!".to_string());
         
         match func.as_str() {
+            "=" => self.eq(args),
             "+" => self.add(args),
             "-" => self.sub(args),
             "*" => self.mul(args),

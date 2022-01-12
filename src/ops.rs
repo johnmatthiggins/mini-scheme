@@ -13,7 +13,7 @@ pub trait EnvOps {
 
     fn cdr(&mut self, expr: &Expr) -> Result<Expr, String>;
 
-    fn eq(&mut self, cdr: &[Expr]) -> Result<Expr, String>;
+    fn eq(&mut self, cdr: &Vec<Expr>) -> Result<Expr, String>;
 
     fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 
@@ -48,7 +48,7 @@ impl EnvOps for Env {
         }
     }
 
-    fn eq(&mut self, cdr: &[Expr]) -> Result<Expr, String> {
+    fn eq(&mut self, cdr: &Vec<Expr>) -> Result<Expr, String> {
         let first = cdr.first();
 
         match first {
