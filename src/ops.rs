@@ -1,5 +1,7 @@
 use bigdecimal::BigDecimal;
 use core::ops::Add;
+use core::ops::Sub;
+use core::ops::Neg;
 use crate::environment::Env;
 use crate::environment::EnvTrait;
 use crate::syntax::Expr;
@@ -14,20 +16,20 @@ pub trait EnvOps {
 
     fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 
-    fn sub_list(&mut self, args: &Vec<Expr>);
+    fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 
-    fn mul_list(&mut self, list: &Vec<Expr>);
+    fn mul(&mut self, list: &Vec<Expr>);
 
-    fn div_list(&mut self, list: &Vec<Expr>);
+    fn div(&mut self, list: &Vec<Expr>);
 
-    fn mod_list(&mut self, list: &Vec<Expr>);
+    fn modulo(&mut self, list: &Vec<Expr>);
 }
 
 impl EnvOps for Env {
     // Return first element of list or just empty.
     fn car(&mut self, expr: &Expr) -> Result<Expr, String> {
         match expr {
-            Expr::Atom(atom) => Result::Err(
+            Expr::Atom(_) => Result::Err(
                 "'car' can only be applied to lists.".to_string()),
             Expr::List(list) => match list.first() {
                 Some(element) => Result::Ok(element.to_owned()),
@@ -39,7 +41,7 @@ impl EnvOps for Env {
 
     fn cdr(&mut self, expr: &Expr) -> Result<Expr, String> {
         match expr {
-            Expr::Atom(a) => Result::Err(
+            Expr::Atom(_) => Result::Err(
                 "'cdr' can only be applied to lists.".to_string()),
             Expr::List(list) => Result::Ok(Expr::List(list[1..].to_vec()))
         }
@@ -54,7 +56,7 @@ impl EnvOps for Env {
                 
                 // Loop through all of them and make sure
                 // they are equal to each other.
-                for (i, exp) in cdr.iter().enumerate() {
+                for exp in cdr.iter() {
                     is_eq = is_eq && s == exp;
                 }
 
@@ -81,7 +83,7 @@ impl EnvOps for Env {
                         _ => Result::Err(
                             "Non-number atom cannot have operator '+' applied to it.".to_string())
                     },
-                    Expr::List(list) => Result::Err(
+                    Expr::List(_) => Result::Err(
                         "List cannot have operator '+' applied to it.".to_string())
                 };
 
@@ -100,15 +102,77 @@ impl EnvOps for Env {
         return Result::Ok(Expr::Atom(Atom::Number(total)));
     }
 
-    fn sub_list(&mut self, args: &Vec<Expr>) {
+    fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
+        // If only one argument, return negated number.
+        // If multiple, start total as first arg,
+        // then subtract every arg after that.
+        let total: Option<BigDecimal> = args
+            .first()
+            .and_then(|x| match x {
+                Expr::Atom(atom) => match atom {
+                    Atom::Number(n) => Some(n.to_owned()),
+                    _ => None
+                },
+                Expr::List(_) => None
+            });
+        
+        if args.len() > 1 {
+            let result = total
+                .map(|n| sub_car_cdr(self, n, &args[..1].to_vec()))
+                .unwrap_or(Result::Err("Cannot perform '-' operator on non-numeric type.".to_string()));
+
+            return result;
+        }
+        else {
+            let result = total
+                .map(|x| Ok(Expr::Atom(Atom::Number(x.neg()))))
+                .unwrap_or(
+                    Err("Cannot perform '-' operator on non-numeric type.".to_string()));
+
+            return result;
+        }
     }
 
-    fn mul_list(&mut self, list: &Vec<Expr>) {
+    fn mul(&mut self, list: &Vec<Expr>) {
     }
 
-    fn div_list(&mut self, list: &Vec<Expr>) {
+    fn div(&mut self, list: &Vec<Expr>) {
     }
 
-    fn mod_list(&mut self, list: &Vec<Expr>) {
+    fn modulo(&mut self, list: &Vec<Expr>) {
     }
+}
+
+fn sub_car_cdr(mut env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, String> {
+    let mut total = car;
+
+    for (i, expr) in cdr.into_iter().enumerate() {
+        let simple_tree = env.to_owned().simplify(expr);
+
+        match simple_tree {
+            Ok(tree) => {
+                let number = match tree {
+                    Expr::Atom(atom) => match atom {
+                        Atom::Number(n) => Result::Ok(n),
+                        _ => Result::Err(
+                            "Non-number atom cannot have operator '-' applied to it.".to_string())
+                    },
+                    Expr::List(_) => Result::Err(
+                        "List cannot have operator '-' applied to it.".to_string())
+                };
+
+                match number {
+                    Ok(n) => {
+                        total = total.sub(n);
+                    },
+                    Err(msg) => {
+                        return Result::Err(msg);
+                    }
+                }
+            },
+            Err(msg) => return Result::Err(msg)
+        };
+    }
+
+    return Result::Ok(Expr::Atom(Atom::Number(total)));
 }

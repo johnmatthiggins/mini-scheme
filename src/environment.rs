@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use core::ops::Add;
+use core::ops::Sub;
 use crate::lexer;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
@@ -62,6 +63,7 @@ impl EnvTrait for Env {
         
         match func.as_str() {
             "+" => self.add(args),
+            "-" => self.sub(args),
             _ => Result::Err("Function name not recognized.".to_string())
         }
     }
