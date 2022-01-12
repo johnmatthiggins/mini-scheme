@@ -55,23 +55,32 @@ impl EnvTrait for Env {
     fn apply(&mut self, func: &String, args: &Vec<Expr>) -> Result<Expr, String> {
         // Match functions to their name and return a function not found error
         // if it doesn't exist in the environment or in built in functions.
-        match func.as_str() {
-            "=" => self.eq(args),
-            "+" => self.add(args),
-            "-" => self.sub(args),
-            "*" => self.mul(args),
-            "/" => self.div(args),
-            "%" => self.modulo(args),
-            "car" => self.car(args),
-            "cdr" => self.cdr(args),
-            "quote" => self.quote(args),
-            "not" => self.not(args),
-            "and" => self.and(args),
-            "or" => self.or(args),
-            "atom" => self.atom(args),
-            "if" => self.if_op(args),
-            "define" => self.define(args),
-            _ => Result::Err("Function name not recognized.".to_string())
+
+        if !self.contains_key(func) {
+           let result = match func.as_str() {
+                "=" => self.eq(args),
+                "+" => self.add(args),
+                "-" => self.sub(args),
+                "*" => self.mul(args),
+                "/" => self.div(args),
+                "%" => self.modulo(args),
+                "car" => self.car(args),
+                "cdr" => self.cdr(args),
+                "quote" => self.quote(args),
+                "not" => self.not(args),
+                "and" => self.and(args),
+                "or" => self.or(args),
+                "atom" => self.atom(args),
+                "if" => self.if_op(args),
+                "define" => self.define(args),
+                _ => Result::Err("Function name not recognized.".to_string())
+            };
+            
+            return result;
+        }
+        else {
+            // Probably will have to remove this once we start implementing the LAMBDA.
+            return Result::Err("Value cannot be used as function.".to_string())
         }
     }
 
