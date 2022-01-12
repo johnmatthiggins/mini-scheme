@@ -1,7 +1,8 @@
 mod lexer;
 mod syntax;
 mod environment;
-mod ops;
+mod built_in;
+mod math;
 
 use std::collections::HashMap;
 use std::io::Write;

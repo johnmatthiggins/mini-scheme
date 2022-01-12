@@ -10,9 +10,7 @@ use crate::environment::EnvTrait;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
 
-pub trait EnvOps {
-    fn car(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
-    fn cdr(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
+pub trait MathOps {
     fn eq(&mut self, cdr: &Vec<Expr>) -> Result<Expr, String>;
     fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
@@ -21,28 +19,7 @@ pub trait EnvOps {
     fn modulo(&mut self, list: &Vec<Expr>) -> Result<Expr, String>;
 }
 
-impl EnvOps for Env {
-    fn car(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
-        if expr.len() != 1 {
-            return Err("Incorrect argument count for 'car' operator.".to_string());
-        }
-        else {
-            return car_exp(&expr[0]);
-        }
-    }
-
-    fn cdr(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
-        // If no elements in list throw error.
-        // If more than one arg throw error.
-        // If first arg is not list throw error.
-        if expr.len() != 1 {
-            return Err("Incorrect argument count for 'cdr' operator.".to_string());
-        }
-        else {
-            return cdr_exp(&expr[0]);
-        }
-    }
-
+impl MathOps for Env {
     fn eq(&mut self, cdr: &Vec<Expr>) -> Result<Expr, String> {
         let first = cdr.first();
 
@@ -315,26 +292,4 @@ fn mod_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, Stri
     }
 
     return Result::Ok(Expr::Atom(Atom::Number(total)));
-}
-
-// Return first element of list or just empty.
-fn car_exp(expr: &Expr) -> Result<Expr, String> {
-    match expr {
-        Expr::Atom(_) => Result::Err(
-            "'car' can only be applied to lists.".to_string()),
-        Expr::List(list) => match list.first() {
-            Some(element) => Result::Ok(element.to_owned()),
-            None => Result::Err(
-                "'car' cannot be applied to empty lists.".to_string())
-        }
-    }
-}
-
-// Return elements after first.
-fn cdr_exp(expr: &Expr) -> Result<Expr, String> {
-    match expr {
-        Expr::Atom(_) => Result::Err(
-            "'cdr' can only be applied to lists.".to_string()),
-        Expr::List(list) => Result::Ok(Expr::List(list[1..].to_vec()))
-    }
 }
