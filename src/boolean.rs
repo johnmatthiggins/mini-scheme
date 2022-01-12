@@ -8,6 +8,7 @@ pub trait LogicOps {
     fn or(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn not(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn atom(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn if_op(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 }
 
 impl LogicOps for Env {
@@ -85,6 +86,25 @@ impl LogicOps for Env {
                 });
 
             return result;
+        }
+    }
+
+    fn if_op(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
+        if args.len() == 3 {
+            let exp0 = self.simplify(&args[0]);
+
+            let return_exp = exp0.and_then(|x| try_get_bool(&x))
+                .map(|x| {
+                    match x {
+                        true => args[1].to_owned(),
+                        false => args[2].to_owned()
+                    }
+                });
+
+            return return_exp;
+        }
+        else {
+            return Err("Incorrect number of arguments for 'if' operator.".to_string());
         }
     }
 }
