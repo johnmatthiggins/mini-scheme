@@ -1,5 +1,5 @@
 [package]
-name = "lisp-repl"
+name = "mini-scheme"
 version = "0.1.0"
 authors = ["jhiggins <johnmatthiggins@gmail.com>"]
 edition = "2018"
