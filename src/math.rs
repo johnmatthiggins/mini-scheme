@@ -212,7 +212,7 @@ fn sub_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, Stri
 
                 match number {
                     Ok(n) => {
-                        total = total.sub(n);
+                        total -= n;
                     },
                     Err(msg) => {
                         return Result::Err(msg);
@@ -246,7 +246,8 @@ fn div_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, Stri
 
                 match number {
                     Ok(n) => {
-                        total = total.div(n);
+                        total = total / n;
+                        println!("{}", total.to_string());
                     },
                     Err(msg) => {
                         return Result::Err(msg);
