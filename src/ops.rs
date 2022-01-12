@@ -2,6 +2,7 @@ use bigdecimal::BigDecimal;
 use core::ops::Add;
 use core::ops::Sub;
 use core::ops::Mul;
+use core::ops::Div;
 use core::ops::Neg;
 use crate::environment::Env;
 use crate::environment::EnvTrait;
@@ -10,19 +11,12 @@ use crate::syntax::Atom;
 
 pub trait EnvOps {
     fn car(&mut self, expr: &Expr) -> Result<Expr, String>;
-
     fn cdr(&mut self, expr: &Expr) -> Result<Expr, String>;
-
     fn eq(&mut self, cdr: &Vec<Expr>) -> Result<Expr, String>;
-
     fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
-
     fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
-
     fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
-
-    fn div(&mut self, list: &Vec<Expr>);
-
+    fn div(&mut self, list: &Vec<Expr>) -> Result<Expr, String>;
     fn modulo(&mut self, list: &Vec<Expr>);
 }
 
@@ -72,7 +66,6 @@ impl EnvOps for Env {
 
     fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         let mut total: BigDecimal = BigDecimal::from(0);
-        let length = args.len();
 
         for expr in args.into_iter() {
             let simple_tree = self.simplify(expr);
@@ -136,7 +129,6 @@ impl EnvOps for Env {
 
     fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         let mut total: BigDecimal = BigDecimal::from(1);
-        let length = args.len();
 
         for expr in args.into_iter() {
             let simple_tree = self.simplify(expr);
@@ -167,7 +159,35 @@ impl EnvOps for Env {
         return Result::Ok(Expr::Atom(Atom::Number(total)));
     }
 
-    fn div(&mut self, list: &Vec<Expr>) {
+    fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
+        // If only one argument, return negated number.
+        // If multiple, start total as first arg,
+        // then subtract every arg after that.
+        let total: Option<BigDecimal> = args
+            .first()
+            .and_then(|x| match x {
+                Expr::Atom(atom) => match atom {
+                    Atom::Number(n) => Some(n.to_owned()),
+                    _ => None
+                },
+                Expr::List(_) => None
+            });
+        
+        if args.len() > 1 {
+            let result = total
+                .map(|n| div_car_cdr(self, n, &args[..1].to_vec()))
+                .unwrap_or(Result::Err("Cannot perform '/' operator on non-numeric type.".to_string()));
+
+            return result;
+        }
+        else {
+            let result = total
+                .map(|x| Ok(Expr::Atom(Atom::Number(BigDecimal::from(1).div(&x)))))
+                .unwrap_or(
+                    Err("Cannot perform '/' operator on non-numeric type.".to_string()));
+
+            return result;
+        }
     }
 
     fn modulo(&mut self, list: &Vec<Expr>) {
@@ -177,7 +197,7 @@ impl EnvOps for Env {
 fn sub_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, String> {
     let mut total = car;
 
-    for (i, expr) in cdr.into_iter().enumerate() {
+    for expr in cdr.into_iter() {
         let simple_tree = env.to_owned().simplify(expr);
 
         match simple_tree {
@@ -195,6 +215,40 @@ fn sub_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, Stri
                 match number {
                     Ok(n) => {
                         total = total.sub(n);
+                    },
+                    Err(msg) => {
+                        return Result::Err(msg);
+                    }
+                }
+            },
+            Err(msg) => return Result::Err(msg)
+        };
+    }
+
+    return Result::Ok(Expr::Atom(Atom::Number(total)));
+}
+
+fn div_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, String> {
+    let mut total = car;
+
+    for expr in cdr.into_iter() {
+        let simple_tree = env.to_owned().simplify(expr);
+
+        match simple_tree {
+            Ok(tree) => {
+                let number = match tree {
+                    Expr::Atom(atom) => match atom {
+                        Atom::Number(n) => Result::Ok(n),
+                        _ => Result::Err(
+                            "Non-number atom cannot have operator '/' applied to it.".to_string())
+                    },
+                    Expr::List(_) => Result::Err(
+                        "List cannot have operator '/' applied to it.".to_string())
+                };
+
+                match number {
+                    Ok(n) => {
+                        total = total.div(n);
                     },
                     Err(msg) => {
                         return Result::Err(msg);

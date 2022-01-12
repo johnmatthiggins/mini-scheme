@@ -66,6 +66,7 @@ impl EnvTrait for Env {
             "+" => self.add(args),
             "-" => self.sub(args),
             "*" => self.mul(args),
+            "/" => self.div(args),
             _ => Result::Err("Function name not recognized.".to_string())
         }
     }
