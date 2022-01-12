@@ -1,6 +1,6 @@
 use crate::syntax::Expr;
-use crate::environment::Env;
-use crate::environment::EnvTrait;
+use crate::env::Env;
+use crate::env::EnvTrait;
 
 pub trait EnvPrimitives {
     fn quote(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;

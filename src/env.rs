@@ -1,6 +1,7 @@
 use std::collections::HashMap;
-use crate::lexer;
+use crate::lex;
 use crate::built_in::EnvPrimitives;
+use crate::boolean::LogicOps;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
 use crate::math::MathOps;
@@ -22,8 +23,8 @@ pub trait EnvTrait {
 
 impl EnvTrait for Env {
     fn eval(&mut self, input: &String) -> Result<Expr, String> {
-        let ast = lexer::lexical_analysis(input)
-            .map(|x| lexer::parse_tokens(&x))
+        let ast = lex::lexical_analysis(input)
+            .map(|x| lex::parse_tokens(&x))
             .and_then(|x| self.simplify(&x));
 
         return ast;
@@ -63,6 +64,9 @@ impl EnvTrait for Env {
             "car" => self.car(args),
             "cdr" => self.cdr(args),
             "quote" => self.quote(args),
+            "not" => self.not(args),
+            "and" => self.and(args),
+            "or" => self.or(args),
             _ => Result::Err("Function name not recognized.".to_string())
         }
     }

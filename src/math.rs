@@ -5,8 +5,8 @@ use core::ops::Mul;
 use core::ops::Div;
 use core::ops::Rem;
 use core::ops::Neg;
-use crate::environment::Env;
-use crate::environment::EnvTrait;
+use crate::env::Env;
+use crate::env::EnvTrait;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
 
@@ -272,10 +272,10 @@ fn mod_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, Stri
                     Expr::Atom(atom) => match atom {
                         Atom::Number(n) => Result::Ok(n),
                         _ => Result::Err(
-                            "Non-number atom cannot have operator '-' applied to it.".to_string())
+                            "Non-number atom cannot have operator '%' applied to it.".to_string())
                     },
                     Expr::List(_) => Result::Err(
-                        "List cannot have operator '-' applied to it.".to_string())
+                        "List cannot have operator '%' applied to it.".to_string())
                 };
 
                 match number {

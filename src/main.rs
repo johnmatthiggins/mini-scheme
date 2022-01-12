@@ -1,18 +1,19 @@
-mod lexer;
+mod lex;
 mod syntax;
-mod environment;
+mod env;
 mod built_in;
 mod math;
+mod boolean;
 
 use std::collections::HashMap;
 use std::io::Write;
 use std::io;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
-use crate::environment::EnvTrait;
-use crate::environment::Env;
+use crate::env::EnvTrait;
+use crate::env::Env;
 
-const WELCOME: &str = "MINI SCHEME VERSION 0.1.0\n";
+const WELCOME: &str = "Mini-Scheme Version 0.1.0\n";
 
 const PROMPT: &str = "> ";
 
