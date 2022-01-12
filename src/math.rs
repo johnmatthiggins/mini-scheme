@@ -1,8 +1,4 @@
 use bigdecimal::BigDecimal;
-use core::ops::Add;
-use core::ops::Sub;
-use core::ops::Mul;
-use core::ops::Div;
 use core::ops::Rem;
 use core::ops::Neg;
 use crate::env::Env;
@@ -11,32 +7,43 @@ use crate::syntax::Expr;
 use crate::syntax::Atom;
 
 pub trait MathOps {
-    fn eq(&mut self, cdr: &Vec<Expr>) -> Result<Expr, String>;
+    fn eq(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
-    fn div(&mut self, list: &Vec<Expr>) -> Result<Expr, String>;
-    fn modulo(&mut self, list: &Vec<Expr>) -> Result<Expr, String>;
+    fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn modulo(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 }
 
 impl MathOps for Env {
-    fn eq(&mut self, cdr: &Vec<Expr>) -> Result<Expr, String> {
-        let first = cdr.first();
+    fn eq(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
+        let first = args.first()
+            .map(|x| Result::Ok(x))
+            .unwrap_or(Result::Err("Operator '=' must have at least one argument.".to_string()))
+            .and_then(|x| self.simplify(x));
 
         match first {
-            Some(s) => {
+            Ok(s) => {
                 let mut is_eq = true;
                 
                 // Loop through all of them and make sure
                 // they are equal to each other.
-                for exp in cdr.iter() {
-                    is_eq = is_eq && s == exp;
+                for expr in args[1..].iter() {
+                    let simple_exp = self.simplify(&expr);
+
+                    match simple_exp {
+                        Ok(v) => {
+                            is_eq = is_eq && s == v;
+                        },
+                        Err(msg) => {
+                            return Err(msg);
+                        }
+                    }
                 }
 
                 return Result::Ok(Expr::Atom(Atom::Boolean(is_eq)));
             }
-            None => Result::Err(
-                "Incorrect argument count for '=' operator.".to_string()),
+            Err(msg) => Result::Err(msg),
         }
     }
 
@@ -60,7 +67,7 @@ impl MathOps for Env {
                 };
 
                 if number.is_ok() {
-                    total = total.add(&number.unwrap());
+                    total = total + number.unwrap();
                 }
                 else {
                     return Result::Err("Error".to_string());
@@ -123,7 +130,7 @@ impl MathOps for Env {
                 };
 
                 if number.is_ok() {
-                    total = total.mul(&number.unwrap());
+                    total = total * number.unwrap();
                 }
                 else {
                     return Result::Err("Error".to_string());
@@ -160,7 +167,7 @@ impl MathOps for Env {
         }
         else {
             let result = total
-                .map(|x| Ok(Expr::Atom(Atom::Number(BigDecimal::from(1).div(&x)))))
+                .map(|x| Ok(Expr::Atom(Atom::Number(BigDecimal::from(1) / x))))
                 .unwrap_or(
                     Err("Cannot perform '/' operator on non-numeric type.".to_string()));
 
