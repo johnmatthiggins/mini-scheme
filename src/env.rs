@@ -19,6 +19,7 @@ pub trait EnvTrait {
     fn eval_car_cdr(&mut self, car: Atom, cdr: &Vec<Expr>) -> Result<Expr, String>;
     fn apply(&mut self, func: &String, args: &Vec<Expr>) -> Result<Expr, String>;
     fn simplify(&mut self, expr: &Expr) -> Result<Expr, String>;
+    fn get_symbol(&mut self, s: &String) -> Result<Expr, String>;
 }
 
 impl EnvTrait for Env {
@@ -69,6 +70,7 @@ impl EnvTrait for Env {
             "or" => self.or(args),
             "atom" => self.atom(args),
             "if" => self.if_op(args),
+            "define" => self.define(args),
             _ => Result::Err("Function name not recognized.".to_string())
         }
     }
@@ -77,7 +79,18 @@ impl EnvTrait for Env {
         match expr {
             Expr::List(list) => self.eval_list(list),
             // Don't worry about atoms right now.
-            Expr::Atom(atom) => Result::Ok(Expr::Atom(atom.to_owned()))
+            Expr::Atom(atom) => match atom {
+                Atom::Symbol(s) => self.get_symbol(&s),
+                _ => Ok(Expr::Atom(atom.to_owned()))
+            }
         }
+    }
+
+    fn get_symbol(&mut self, s: &String) -> Result<Expr, String> {
+        let result = self.to_owned().get(s)
+            .map(|x| self.simplify(&x))
+            .unwrap_or(Err(format!("Symbol of name '{}' is undefined.", s).to_string()));
+        
+        return result;
     }
 }

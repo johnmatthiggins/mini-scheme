@@ -1,14 +1,36 @@
-use crate::syntax::Expr;
 use crate::env::Env;
 use crate::env::EnvTrait;
+use crate::syntax::Atom;
+use crate::syntax::Expr;
 
 pub trait EnvPrimitives {
+    fn define(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn quote(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn car(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn cdr(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
 }
 
 impl EnvPrimitives for Env {
+    fn define(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
+        if expr.len() != 2 {
+            return Err("Incorrect number of arguments for 'define' operator.".to_string());
+        }
+        else {
+            // Add new symbol definition to environment.
+            let current_expr = &expr[0];
+            let symbol_def = &expr[1];
+            let symbol = try_get_symbol_string(current_expr);
+
+            let result = symbol.map(|x| {
+                self.insert(x.to_owned(), symbol_def.to_owned());
+
+                return Expr::Atom(Atom::Symbol(x));
+            });
+
+            return result;
+        }
+    }
+
     fn quote(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
         if expr.len() != 1 {
             return Err("Incorrect argument count for 'quote' operator.".to_string());
@@ -73,5 +95,15 @@ fn cdr_exp(expr: &Expr) -> Result<Expr, String> {
         Expr::Atom(_) => Result::Err(
             "'cdr' can only be applied to lists.".to_string()),
         Expr::List(list) => Result::Ok(Expr::List(list[1..].to_vec()))
+    }
+}
+
+fn try_get_symbol_string(expr: &Expr) -> Result<String, String> {
+    match expr {
+        Expr::Atom(atom) => match atom {
+            Atom::Symbol(s) => Ok(s.to_owned()),
+            _ => Err("Invalid symbol name.".to_string())
+        },
+        Expr::List(_) => Err("List is not a valid symbol name".to_string())
     }
 }
