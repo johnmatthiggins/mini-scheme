@@ -1,6 +1,7 @@
 use bigdecimal::BigDecimal;
 use core::ops::Add;
 use core::ops::Sub;
+use core::ops::Mul;
 use core::ops::Neg;
 use crate::environment::Env;
 use crate::environment::EnvTrait;
@@ -18,7 +19,7 @@ pub trait EnvOps {
 
     fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 
-    fn mul(&mut self, list: &Vec<Expr>);
+    fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 
     fn div(&mut self, list: &Vec<Expr>);
 
@@ -133,7 +134,37 @@ impl EnvOps for Env {
         }
     }
 
-    fn mul(&mut self, list: &Vec<Expr>) {
+    fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
+        let mut total: BigDecimal = BigDecimal::from(1);
+        let length = args.len();
+
+        for expr in args.into_iter() {
+            let simple_tree = self.simplify(expr);
+
+            if simple_tree.is_ok() {
+                let number = match simple_tree.unwrap() {
+                    Expr::Atom(atom) => match atom {
+                        Atom::Number(n) => Result::Ok(n),
+                        _ => Result::Err(
+                            "Non-number atom cannot have operator '*' applied to it.".to_string())
+                    },
+                    Expr::List(_) => Result::Err(
+                        "List cannot have operator '*' applied to it.".to_string())
+                };
+
+                if number.is_ok() {
+                    total = total.mul(&number.unwrap());
+                }
+                else {
+                    return Result::Err("Error".to_string());
+                }
+            }
+            else {
+                return Result::Err("Error".to_string());
+            }
+        }
+
+        return Result::Ok(Expr::Atom(Atom::Number(total)));
     }
 
     fn div(&mut self, list: &Vec<Expr>) {
@@ -143,7 +174,7 @@ impl EnvOps for Env {
     }
 }
 
-fn sub_car_cdr(mut env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, String> {
+fn sub_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, String> {
     let mut total = car;
 
     for (i, expr) in cdr.into_iter().enumerate() {
