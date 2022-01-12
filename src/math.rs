@@ -90,7 +90,7 @@ impl MathOps for Env {
         
         if args.len() > 1 {
             let result = total
-                .map(|n| sub_car_cdr(self, n, &args[..1].to_vec()))
+                .map(|n| sub_car_cdr(self, n, &args[1..].to_vec()))
                 .unwrap_or(Result::Err("Cannot perform '-' operator on non-numeric type.".to_string()));
 
             return result;
@@ -153,7 +153,7 @@ impl MathOps for Env {
         
         if args.len() > 1 {
             let result = total
-                .map(|n| div_car_cdr(self, n, &args[..1].to_vec()))
+                .map(|n| div_car_cdr(self, n, &args[1..].to_vec()))
                 .unwrap_or(Result::Err("Cannot perform '/' operator on non-numeric type.".to_string()));
 
             return result;
@@ -181,7 +181,7 @@ impl MathOps for Env {
         
         if args.len() == 2 {
             let result = total
-                .map(|n| mod_car_cdr(self, n, &args[..1].to_vec()))
+                .map(|n| mod_car_cdr(self, n, &args[1..].to_vec()))
                 .unwrap_or(Result::Err("Cannot perform '%' operator on non-numeric type.".to_string()));
 
             return result;
