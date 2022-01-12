@@ -12,7 +12,7 @@ use crate::syntax::Atom;
 use crate::environment::EnvTrait;
 use crate::environment::Env;
 
-const PROMPT: &str = "λ ";
+const PROMPT: &str = "> ";
 
 fn main() {
     // Holds all the predefined functions and values for REPL session.
