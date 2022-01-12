@@ -12,9 +12,13 @@ use crate::syntax::Atom;
 use crate::environment::EnvTrait;
 use crate::environment::Env;
 
+const WELCOME: &str = "MINI SCHEME VERSION 0.1.0\n";
+
 const PROMPT: &str = "> ";
 
 fn main() {
+    print!("{}", WELCOME);
+
     // Holds all the predefined functions and values for REPL session.
     let mut env: Env = HashMap::new();
 
