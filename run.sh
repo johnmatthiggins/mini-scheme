@@ -1,3 +1,5 @@
 #!/bin/bash
 
-./target/debug/lisp-repl
+cargo build >/dev/null
+
+./target/debug/mini-scheme

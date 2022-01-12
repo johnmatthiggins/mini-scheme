@@ -7,6 +7,7 @@ pub trait LogicOps {
     fn and(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn or(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn not(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn atom(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 }
 
 impl LogicOps for Env {
@@ -66,6 +67,22 @@ impl LogicOps for Env {
             let result = tree
                 .and_then(|x| try_get_bool(&x))
                 .map(|x| Expr::Atom(Atom::Boolean(x)));
+
+            return result;
+        }
+    }
+
+    fn atom(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
+        if args.len() != 1 {
+            return Err("Incorrect number of args for 'atom' operator.".to_string());
+        }
+        else {
+            let expr = &args[0];
+            let result = self.simplify(expr)
+                .map(|x| match x {
+                    Expr::Atom(_) => Expr::Atom(Atom::Boolean(true)),
+                    Expr::List(_) => Expr::Atom(Atom::Boolean(false))
+                });
 
             return result;
         }

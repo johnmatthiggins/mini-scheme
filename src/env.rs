@@ -67,6 +67,7 @@ impl EnvTrait for Env {
             "not" => self.not(args),
             "and" => self.and(args),
             "or" => self.or(args),
+            "atom" => self.atom(args),
             _ => Result::Err("Function name not recognized.".to_string())
         }
     }
