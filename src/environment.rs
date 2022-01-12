@@ -1,6 +1,4 @@
 use std::collections::HashMap;
-use core::ops::Add;
-use core::ops::Sub;
 use crate::lexer;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
@@ -42,7 +40,7 @@ impl EnvTrait for Env {
             Some(expr) => match expr {
                 Expr::Atom(atom)
                     => self.eval_car_cdr(atom.to_owned(), &list[1..].to_vec()),
-                Expr::List(list)
+                Expr::List(_)
                     => Result::Err("First token in list must be function name.".to_string())
             },
             None => Result::Err("Empty list is not a valid token.".to_string())
@@ -59,14 +57,15 @@ impl EnvTrait for Env {
     fn apply(&mut self, func: &String, args: &Vec<Expr>) -> Result<Expr, String> {
         // Match functions to their name and return a function not found error
         // if it doesn't exist in the environment or in built in functions.
-        // return Result::Err("Good job! You reached the end of the level!".to_string());
-        
         match func.as_str() {
             "=" => self.eq(args),
             "+" => self.add(args),
             "-" => self.sub(args),
             "*" => self.mul(args),
             "/" => self.div(args),
+            "%" => self.modulo(args),
+            "car" => self.car(args),
+            "cdr" => self.cdr(args),
             _ => Result::Err("Function name not recognized.".to_string())
         }
     }
