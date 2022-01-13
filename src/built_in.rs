@@ -2,12 +2,14 @@ use crate::env::Env;
 use crate::env::EnvTrait;
 use crate::syntax::Atom;
 use crate::syntax::Expr;
+use crate::syntax::LambdaDef;
 
 pub trait EnvPrimitives {
     fn define(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn quote(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn car(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn cdr(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
+    fn lambda(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
 }
 
 impl EnvPrimitives for Env {
@@ -80,19 +82,23 @@ impl EnvPrimitives for Env {
             return Err("Incorrect argument count for 'lambda' operator.".to_string());
         }
         else {
-            let param_expr = self.simplify(expr[0]);
-            let params = match param_expr {
-                Expr::Atom(v) => vec![Expr::Atom(v.to_owned())],
-                Expr::List(l) => l
-            };
+            let param_expr = self.simplify(&expr[0]);
+            let params = param_expr
+                .map(|x| match x {
+                    Expr::Atom(v) => vec![Expr::Atom(v.to_owned())],
+                    Expr::List(l) => l
+                });
+
             let body = Box::new(expr[1]);
 
-            let result = LambdaDef {
-                params: params,
-                body: body
-            };
+            let result = params
+                .map(|p| LambdaDef {
+                    params: p,
+                    body: body
+                })
+                .map(|x| Expr::Atom(Atom::Lambda(x)));
 
-            return Ok(Expr::Atom(Atom::Lambda(result)));
+            return result;
         }
     }
 }

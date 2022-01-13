@@ -77,7 +77,9 @@ fn print_atom(expr_atom: &Atom) -> String {
         Atom::StringLiteral(s) => s.to_string(),
         Atom::Number(n) => n.to_string(),
         Atom::Symbol(s) => s.to_string(),
-        Atom::Nil => "nil".to_string()
+        Atom::Nil => "nil".to_string(),
+        // TODO: Fix this and add compatibility for LAMBDA
+        _ => "I guess we're just gonna blow up now.".to_string()
     };
 
     return result;

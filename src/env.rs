@@ -4,6 +4,7 @@ use crate::built_in::EnvPrimitives;
 use crate::boolean::LogicOps;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
+use crate::syntax::LambdaDef;
 use crate::math::MathOps;
 
 pub type Env = HashMap<String, Expr>;
@@ -20,6 +21,7 @@ pub trait EnvTrait {
     fn apply(&mut self, func: &String, args: &Vec<Expr>) -> Result<Expr, String>;
     fn simplify(&mut self, expr: &Expr) -> Result<Expr, String>;
     fn get_symbol(&mut self, s: &String) -> Result<Expr, String>;
+    fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>) -> Result<Expr, String>;
 }
 
 impl EnvTrait for Env {
@@ -110,6 +112,6 @@ impl EnvTrait for Env {
         // Create local session for evaluating a function.
         let local_env = self.clone();
 
-        return Err("EXECUTE LAMBDA UNDER CONSTRUCTIOON");
+        return Err("EXECUTE LAMBDA UNDER CONSTRUCTION".to_string());
     }
 }
