@@ -9,11 +9,6 @@ use crate::math::MathOps;
 
 pub type Env = HashMap<String, Expr>;
 
-// pub struct SymbolMapping {
-//     name: String,
-//     expr: Atom
-// }
-
 pub trait EnvTrait {
     fn eval(&mut self, input: &String) -> Result<Expr, String>;
     fn eval_list(&mut self, list: &Vec<Expr>) -> Result<Expr, String>;
@@ -57,6 +52,7 @@ impl EnvTrait for Env {
     fn apply(&mut self, func: &String, args: &Vec<Expr>) -> Result<Expr, String> {
         // Match functions to their name and return a function not found error
         // if it doesn't exist in the environment or in built in functions.
+        let ERROR_MESSAGE = "Symbol cannot be used as function.";
 
         if !self.contains_key(func) {
            let result = match func.as_str() {
@@ -87,19 +83,22 @@ impl EnvTrait for Env {
             
             // Grab possibly lambda function from local environment.
             let copy_env = self.clone();
-            let maybe_lambda = copy_env.get(func)
+            let maybe_lambda = copy_env
+                .get(func)
+                .map(|x| self.simplify(x))
+                .unwrap_or(Err(ERROR_MESSAGE.to_string()))
                 .and_then(|x| match x {
-                    Expr::Atom(v) => Some(v),
-                    Expr::List(_) => None
+                    Expr::Atom(v) => Ok(v),
+                    Expr::List(_) => Err(ERROR_MESSAGE.to_string())
                 })
-            .and_then(|x| match x {
-                Atom::Lambda(def) => Some(def),
-                _ => None
-            });
+                .and_then(|x| match x {
+                    Atom::Lambda(def) => Ok(def),
+                    _ => Err(ERROR_MESSAGE.to_string())
+                });
 
             let result = match maybe_lambda {
-                Some(def) => self.to_owned().execute_lambda(def, args),
-                None => Err("Symbol cannot be used as function.".to_string())
+                Ok(def) => self.to_owned().execute_lambda(&def, args),
+                Err(msg) => Err(msg)
             };
 
             return result;
@@ -145,7 +144,7 @@ impl EnvTrait for Env {
                 // Deconstruct into separate parts.
                 let (arg, name_expr) = it;
 
-                let name = local_env.simplify(name_expr)
+                let name = Result::Ok(name_expr)
                     .and_then(|x| match x {
                         Expr::Atom(v) => Ok(v),
                         Expr::List(_) => Err("List cannot be parameter name.".to_string())
@@ -157,7 +156,7 @@ impl EnvTrait for Env {
                 
                 match name {
                     Ok(v) => {
-                        local_env.insert(v, arg.to_owned());
+                        local_env.insert(v.to_owned(), arg.to_owned());
                     },
                     Err(msg) => {
                         return Err(msg);

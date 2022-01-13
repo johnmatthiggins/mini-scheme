@@ -77,28 +77,26 @@ impl EnvPrimitives for Env {
         }
     }
 
-    fn lambda(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> { 
+    fn lambda(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
         if expr.len() != 2 {
             return Err("Incorrect argument count for 'lambda' operator.".to_string());
         }
         else {
-            let param_expr = self.simplify(&expr[0]);
-            let params = param_expr
-                .map(|x| match x {
+            let param_expr = &expr[0];
+            let params =
+                match param_expr {
                     Expr::Atom(v) => vec![Expr::Atom(v.to_owned())],
-                    Expr::List(l) => l
-                });
+                    Expr::List(l) => l.to_vec()
+                };
 
             let body = Box::new(expr[1].to_owned());
 
-            let result = params
-                .map(|p| LambdaDef {
-                    params: p,
+            let result = LambdaDef {
+                    params: params,
                     body: body
-                })
-                .map(|x| Expr::Atom(Atom::Lambda(x)));
-
-            return result;
+                };
+            
+            return Ok(Expr::Atom(Atom::Lambda(result)));
         }
     }
 }
