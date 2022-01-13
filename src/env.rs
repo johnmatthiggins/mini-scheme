@@ -29,7 +29,16 @@ impl EnvTrait for Env {
     }
 
     fn eval_list(&mut self, list: &Vec<Expr>) -> Result<Expr, String> {
-        let car = list.first();
+        let car = list
+            .first()
+            .map(|x| match x {
+                Expr::List(_) => self.simplify(x),
+                Expr::Atom(_) => Ok(x.to_owned())
+            })
+            .and_then(|x| match x {
+                Ok(v) => Some(v),
+                Err(_) => None
+            });
 
         match car {
             Some(expr) => match expr {
@@ -52,6 +61,7 @@ impl EnvTrait for Env {
     fn apply(&mut self, func: &String, args: &Vec<Expr>) -> Result<Expr, String> {
         // Match functions to their name and return a function not found error
         // if it doesn't exist in the environment or in built in functions.
+        #[allow(non_snake_case)]
         let ERROR_MESSAGE = "Symbol cannot be used as function.";
 
         if !self.contains_key(func) {

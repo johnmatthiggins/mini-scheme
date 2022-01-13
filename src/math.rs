@@ -127,26 +127,28 @@ impl MathOps for Env {
         for expr in args.into_iter() {
             let simple_tree = self.simplify(expr);
 
-            if simple_tree.is_ok() {
-                let number = match simple_tree.unwrap() {
-                    Expr::Atom(atom) => match atom {
-                        Atom::Number(n) => Result::Ok(n),
-                        _ => Result::Err(
-                            "Non-number atom cannot have operator '*' applied to it.".to_string())
-                    },
-                    Expr::List(_) => Result::Err(
-                        "List cannot have operator '*' applied to it.".to_string())
-                };
+            match simple_tree {
+                Ok(v) => {
+                    let number = match v {
+                        Expr::Atom(atom) => match atom {
+                            Atom::Number(n) => Result::Ok(n),
+                            _ => Result::Err(
+                                "Non-number atom cannot have operator '*' applied to it.".to_string())
+                        },
+                        Expr::List(_) => Result::Err(
+                            "List cannot have operator '*' applied to it.".to_string())
+                    };
 
-                if number.is_ok() {
-                    total = total * number.unwrap();
+                    if number.is_ok() {
+                        total = total * number.unwrap();
+                    }
+                    else {
+                        return Result::Err("Error".to_string());
+                    }
+                },
+                Err(msg) => {
+                    return Err(msg);
                 }
-                else {
-                    return Result::Err("Error".to_string());
-                }
-            }
-            else {
-                return Result::Err("Error".to_string());
             }
         }
 
