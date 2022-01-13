@@ -89,7 +89,7 @@ impl EnvPrimitives for Env {
                     Expr::List(l) => l
                 });
 
-            let body = Box::new(expr[1]);
+            let body = Box::new(expr[1].to_owned());
 
             let result = params
                 .map(|p| LambdaDef {

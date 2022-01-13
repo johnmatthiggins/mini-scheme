@@ -110,8 +110,18 @@ impl EnvTrait for Env {
         -> Result<Expr, String> {
         
         // Create local session for evaluating a function.
-        let local_env = self.clone();
+        let mut local_env = self.clone();
+        
+        let body = *lambda_def.body;
+        let params = *lambda_def.params;
 
-        return Err("EXECUTE LAMBDA UNDER CONSTRUCTION".to_string());
+        if params.len() != args.len() {
+            return Err("Incorrect argument count for function call.".to_string());
+        }
+        else {
+            // Take both vectors of args and params and combine them
+            // in an ordered fashion.
+            // Then after that insert each one into the local environment.
+        }
     }
 }
