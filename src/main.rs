@@ -13,12 +13,12 @@ use crate::syntax::Atom;
 use crate::env::EnvTrait;
 use crate::env::Env;
 
-const WELCOME: &str = "Mini-Scheme Version 0.1.0\n";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const PROMPT: &str = "> ";
 
 fn main() {
-    print!("{}\n", WELCOME);
+    print!("Mini-Scheme Version {}\n\n", VERSION);
 
     // Holds all the predefined functions and values for REPL session.
     let mut env: Env = HashMap::new();
@@ -36,22 +36,27 @@ fn main() {
             .expect("User input could not be read...");
 
         if input.len() > 0 {
-            let is_comment = input
-                .chars()
-                .next()
-                .map(|x| x == ';')
-                .unwrap_or(false);
-            
-            if !is_comment {
-                let result = env.eval(&input);
+            if input != "\n" {
+                let first_char = input
+                    .chars()
+                    .next()
+                    .unwrap();
 
-                let output = match result {
-                    Ok(expr) => print_tree(&expr),
-                    Err(msg) => msg
-                };
+                if first_char != ';' {
+                    let result = env.eval(&input);
 
-                print!("{}\n", &output);
+                    let output = match result {
+                        Ok(expr) => print_tree(&expr),
+                        Err(msg) => msg
+                    };
+
+                    print!("{}\n", &output);
+                }
             }
+        }
+        else {
+            print!("\n");
+            break;
         }
     }
 }
@@ -72,7 +77,7 @@ fn print_atom(expr_atom: &Atom) -> String {
         Atom::StringLiteral(s) => s.to_string(),
         Atom::Number(n) => n.to_string(),
         Atom::Symbol(s) => s.to_string(),
-        Atom::Nil => "()".to_string()
+        Atom::Nil => "nil".to_string()
     };
 
     return result;

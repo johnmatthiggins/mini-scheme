@@ -36,6 +36,9 @@ fn parse_atom(atom: &String) -> Expr {
     else if is_boolean(atom) {
         return Expr::Atom(Atom::Boolean(atom == "#t"));
     }
+    else if atom == "nil" {
+        return Expr::Atom(Atom::Nil);
+    }
     else {
         return Expr::Atom(Atom::Symbol(atom.to_owned()));
     }
