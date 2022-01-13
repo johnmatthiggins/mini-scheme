@@ -83,7 +83,26 @@ impl EnvTrait for Env {
         }
         else {
             // Probably will have to remove this once we start implementing the LAMBDA.
-            return Result::Err("Value cannot be used as function.".to_string())
+            // return Result::Err("Value cannot be used as function.".to_string());
+            
+            // Grab possibly lambda function from local environment.
+            let copy_env = self.clone();
+            let maybe_lambda = copy_env.get(func)
+                .and_then(|x| match x {
+                    Expr::Atom(v) => Some(v),
+                    Expr::List(_) => None
+                })
+            .and_then(|x| match x {
+                Atom::Lambda(def) => Some(def),
+                _ => None
+            });
+
+            let result = match maybe_lambda {
+                Some(def) => self.to_owned().execute_lambda(def, args),
+                None => Err("Symbol cannot be used as function.".to_string())
+            };
+
+            return result;
         }
     }
 
@@ -112,8 +131,8 @@ impl EnvTrait for Env {
         // Create local session for evaluating a function.
         let mut local_env = self.clone();
         
-        let body = *lambda_def.body;
-        let params = *lambda_def.params;
+        let body = &*lambda_def.body;
+        let params = &lambda_def.params;
 
         if params.len() != args.len() {
             return Err("Incorrect argument count for function call.".to_string());
@@ -122,6 +141,31 @@ impl EnvTrait for Env {
             // Take both vectors of args and params and combine them
             // in an ordered fashion.
             // Then after that insert each one into the local environment.
+            for it in args.iter().zip(params.iter()) {
+                // Deconstruct into separate parts.
+                let (arg, name_expr) = it;
+
+                let name = local_env.simplify(name_expr)
+                    .and_then(|x| match x {
+                        Expr::Atom(v) => Ok(v),
+                        Expr::List(_) => Err("List cannot be parameter name.".to_string())
+                    })
+                    .and_then(|x| match x {
+                        Atom::Symbol(s) => Ok(s),
+                        _ => Err("Parameter name must be valid symbol.".to_string())
+                    });
+                
+                match name {
+                    Ok(v) => {
+                        local_env.insert(v, arg.to_owned());
+                    },
+                    Err(msg) => {
+                        return Err(msg);
+                    }
+                }
+            }
+
+            return local_env.simplify(&body);
         }
     }
 }

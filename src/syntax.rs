@@ -2,8 +2,8 @@ use bigdecimal::BigDecimal;
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct LambdaDef {
-    params: Vec<Expr>,
-    body: Box<Expr>
+    pub params: Vec<Expr>,
+    pub body: Box<Expr>
 }
 
 #[derive(Clone, PartialEq, Eq)]
