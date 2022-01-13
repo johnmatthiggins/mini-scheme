@@ -18,7 +18,7 @@ const WELCOME: &str = "Mini-Scheme Version 0.1.0\n";
 const PROMPT: &str = "> ";
 
 fn main() {
-    print!("{}", WELCOME);
+    print!("{}\n", WELCOME);
 
     // Holds all the predefined functions and values for REPL session.
     let mut env: Env = HashMap::new();
@@ -27,7 +27,7 @@ fn main() {
         let mut input = String::new();
         
         // Print prompt than promptly flush output to sync up.
-        print!("\n{}", PROMPT);
+        print!("{}", PROMPT);
         io::stdout().flush().unwrap();
 
         io::stdin()
@@ -36,14 +36,22 @@ fn main() {
             .expect("User input could not be read...");
 
         if input.len() > 0 {
-            let result = env.eval(&input);
+            let is_comment = input
+                .chars()
+                .next()
+                .map(|x| x == ';')
+                .unwrap_or(false);
+            
+            if !is_comment {
+                let result = env.eval(&input);
 
-            let output = match result {
-                Ok(expr) => print_tree(&expr),
-                Err(msg) => msg
-            };
+                let output = match result {
+                    Ok(expr) => print_tree(&expr),
+                    Err(msg) => msg
+                };
 
-            print!("{}", &output);
+                print!("{}\n", &output);
+            }
         }
     }
 }
@@ -63,7 +71,8 @@ fn print_atom(expr_atom: &Atom) -> String {
         },
         Atom::StringLiteral(s) => s.to_string(),
         Atom::Number(n) => n.to_string(),
-        Atom::Symbol(s) => s.to_string()
+        Atom::Symbol(s) => s.to_string(),
+        Atom::Nil => "()".to_string()
     };
 
     return result;

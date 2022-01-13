@@ -5,7 +5,8 @@ pub enum Atom {
    Boolean(bool),
    StringLiteral(String),
    Number(BigDecimal),
-   Symbol(String)
+   Symbol(String),
+   Nil
 }
 
 #[derive(Clone, PartialEq, Eq)]

@@ -66,11 +66,20 @@ impl MathOps for Env {
                         "List cannot have operator '+' applied to it.".to_string())
                 };
 
-                if number.is_ok() {
-                    total = total + number.unwrap();
-                }
-                else {
-                    return Result::Err("Error".to_string());
+                // if number.is_ok() {
+                //     total = total + number.unwrap();
+                // }
+                // else {
+                //     return Result::Err("Error".to_string());
+                // }
+                
+                match number {
+                    Ok(v) => {
+                        total += v;
+                    },
+                    Err(msg) => {
+                        return Result::Err(msg);
+                    }
                 }
             }
             else {

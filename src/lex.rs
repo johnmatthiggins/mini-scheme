@@ -108,7 +108,7 @@ pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
         return Expr::List(local_expr);
     }
     else {
-        return local_expr.get(0).unwrap().to_owned();
+        return local_expr.get(0).unwrap_or(&Expr::Atom(Atom::Nil)).to_owned();
     }
 }
 

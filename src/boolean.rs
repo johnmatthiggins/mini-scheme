@@ -94,10 +94,10 @@ impl LogicOps for Env {
             let exp0 = self.simplify(&args[0]);
 
             let return_exp = exp0.and_then(|x| try_get_bool(&x))
-                .map(|x| {
+                .and_then(|x| {
                     match x {
-                        true => args[1].to_owned(),
-                        false => args[2].to_owned()
+                        true => self.simplify(&args[1]),
+                        false => self.simplify(&args[2])
                     }
                 });
 
