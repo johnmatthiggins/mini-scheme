@@ -67,7 +67,7 @@ impl LogicOps for Env {
 
             let result = tree
                 .and_then(|x| try_get_bool(&x))
-                .map(|x| Expr::Atom(Atom::Boolean(x)));
+                .map(|x| Expr::Atom(Atom::Boolean(!x)));
 
             return result;
         }
