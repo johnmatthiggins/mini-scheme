@@ -73,6 +73,7 @@ impl EnvTrait for Env {
                 "atom" => self.atom(args),
                 "if" => self.if_op(args),
                 "define" => self.define(args),
+                "lambda" => self.lambda(args),
                 _ => Result::Err("Function name not recognized.".to_string())
             };
             
@@ -101,5 +102,14 @@ impl EnvTrait for Env {
             .unwrap_or(Err(format!("Symbol of name '{}' is undefined.", s).to_string()));
         
         return result;
+    }
+
+    fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>)
+        -> Result<Expr, String> {
+        
+        // Create local session for evaluating a function.
+        let local_env = self.clone();
+
+        return Err("EXECUTE LAMBDA UNDER CONSTRUCTIOON");
     }
 }

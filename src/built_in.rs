@@ -74,6 +74,27 @@ impl EnvPrimitives for Env {
             return result;
         }
     }
+
+    fn lambda(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> { 
+        if expr.len() != 2 {
+            return Err("Incorrect argument count for 'lambda' operator.".to_string());
+        }
+        else {
+            let param_expr = self.simplify(expr[0]);
+            let params = match param_expr {
+                Expr::Atom(v) => vec![Expr::Atom(v.to_owned())],
+                Expr::List(l) => l
+            };
+            let body = Box::new(expr[1]);
+
+            let result = LambdaDef {
+                params: params,
+                body: body
+            };
+
+            return Ok(Expr::Atom(Atom::Lambda(result)));
+        }
+    }
 }
 
 // Return first element of list or just empty.
