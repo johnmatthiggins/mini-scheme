@@ -4,16 +4,16 @@ use crate::syntax::Atom;
 use crate::syntax::Expr;
 
 pub trait LogicOps {
-    fn and(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
-    fn or(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
-    fn not(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
-    fn atom(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
-    fn if_op(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
+    fn and(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn or(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn not(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn atom(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn if_op(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 }
 
 impl LogicOps for Env {
     // Returns true if no arguments.
-    fn and(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn and(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         let mut bool_result = true;
 
         for expr in args.iter() {
@@ -35,7 +35,7 @@ impl LogicOps for Env {
         return Ok(Expr::Atom(Atom::Boolean(bool_result)));
     }
 
-    fn or(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn or(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         let mut bool_result = false;
 
         for expr in args.iter() {
@@ -57,9 +57,9 @@ impl LogicOps for Env {
         return Ok(Expr::Atom(Atom::Boolean(bool_result)));
     }
 
-    fn not(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn not(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         if args.len() != 1 {
-            return Err("Incorrect number of args for 'not' operator.");
+            return Err("Incorrect number of args for 'not' operator.".to_string());
         }
         else {
             let expr = &args[0];
@@ -73,9 +73,9 @@ impl LogicOps for Env {
         }
     }
 
-    fn atom(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn atom(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         if args.len() != 1 {
-            return Err("Incorrect number of args for 'atom' operator.");
+            return Err("Incorrect number of args for 'atom' operator.".to_string());
         }
         else {
             let expr = &args[0];
@@ -89,7 +89,7 @@ impl LogicOps for Env {
         }
     }
 
-    fn if_op(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn if_op(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         if args.len() == 3 {
             let exp0 = self.simplify(&args[0]);
 
@@ -104,17 +104,17 @@ impl LogicOps for Env {
             return return_exp;
         }
         else {
-            return Err("Incorrect number of arguments for 'if' operator.");
+            return Err("Incorrect number of arguments for 'if' operator.".to_string());
         }
     }
 }
 
-fn try_get_bool(expr: &Expr) -> Result<bool, &str> {
+fn try_get_bool(expr: &Expr) -> Result<bool, String> {
     match expr {
         Expr::Atom(atom) => match atom {
             Atom::Boolean(b) => Ok(b.to_owned()),
-            _ => Err("Cannot perform operation on non-boolean value.")
+            _ => Err("Cannot perform operation on non-boolean value.".to_string())
         }
-        Expr::List(_) => Err("Cannot perform operation on non-boolean value.")
+        Expr::List(_) => Err("Cannot perform operation on non-boolean value.".to_string())
     }
 }

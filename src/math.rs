@@ -7,19 +7,19 @@ use crate::syntax::Expr;
 use crate::syntax::Atom;
 
 pub trait MathOps {
-    fn eq(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
-    fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
-    fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
-    fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
-    fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
-    fn modulo(&mut self, args: &Vec<Expr>) -> Result<Expr, &str>;
+    fn eq(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn modulo(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 }
 
 impl MathOps for Env {
-    fn eq(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn eq(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         let first = args.first()
             .map(|x| Result::Ok(x))
-            .unwrap_or(Result::Err("Operator '=' must have at least one argument."))
+            .unwrap_or(Result::Err("Operator '=' must have at least one argument.".to_string()))
             .and_then(|x| self.simplify(x));
 
         match first {
@@ -49,7 +49,7 @@ impl MathOps for Env {
 
     // elementary functions of math.
 
-    fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         let mut total: BigDecimal = BigDecimal::from(0);
 
         for expr in args.into_iter() {
@@ -60,10 +60,10 @@ impl MathOps for Env {
                     Expr::Atom(atom) => match atom {
                         Atom::Number(n) => Result::Ok(n),
                         _ => Result::Err(
-                            "Non-number atom cannot have operator '+' applied to it.")
+                            "Non-number atom cannot have operator '+' applied to it.".to_string())
                     },
                     Expr::List(_) => Result::Err(
-                        "List cannot have operator '+' applied to it.")
+                        "List cannot have operator '+' applied to it.".to_string())
                 };
 
                 // if number.is_ok() {
@@ -83,14 +83,14 @@ impl MathOps for Env {
                 }
             }
             else {
-                return Result::Err("Error");
+                return Result::Err("Error".to_string());
             }
         }
 
         return Result::Ok(Expr::Atom(Atom::Number(total)));
     }
 
-    fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         // If only one argument, return negated number.
         // If multiple, start total as first arg,
         // then subtract every arg after that.
@@ -107,7 +107,7 @@ impl MathOps for Env {
         if args.len() > 1 {
             let result = total
                 .map(|n| apply_first_rest(self, n, &args[1..].to_vec(), |a, b| a - b, "-"))
-                .unwrap_or(Result::Err("Cannot perform '-' operator on non-numeric type."));
+                .unwrap_or(Result::Err("Cannot perform '-' operator on non-numeric type.".to_string()));
 
             return result;
         }
@@ -115,13 +115,13 @@ impl MathOps for Env {
             let result = total
                 .map(|x| Ok(Expr::Atom(Atom::Number(x.neg()))))
                 .unwrap_or(
-                    Err("Cannot perform '-' operator on non-numeric type."));
+                    Err("Cannot perform '-' operator on non-numeric type.".to_string()));
 
             return result;
         }
     }
 
-    fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         let mut total: BigDecimal = BigDecimal::from(1);
 
         for expr in args.into_iter() {
@@ -133,17 +133,17 @@ impl MathOps for Env {
                         Expr::Atom(atom) => match atom {
                             Atom::Number(n) => Result::Ok(n),
                             _ => Result::Err(
-                                "Non-number atom cannot have operator '*' applied to it.")
+                                "Non-number atom cannot have operator '*' applied to it.".to_string())
                         },
                         Expr::List(_) => Result::Err(
-                            "List cannot have operator '*' applied to it.")
+                            "List cannot have operator '*' applied to it.".to_string())
                     };
 
                     if number.is_ok() {
                         total = total * number.unwrap();
                     }
                     else {
-                        return Result::Err("Error");
+                        return Result::Err("Error".to_string());
                     }
                 },
                 Err(msg) => {
@@ -155,7 +155,7 @@ impl MathOps for Env {
         return Result::Ok(Expr::Atom(Atom::Number(total)));
     }
 
-    fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         // If only one argument, return negated number.
         // If multiple, start total as first arg,
         // then subtract every arg after that.
@@ -172,7 +172,7 @@ impl MathOps for Env {
         if args.len() > 1 {
             let result = total
                 .map(|n| apply_first_rest(self, n, &args[1..].to_vec(), |a, b| a / b, "/"))
-                .unwrap_or(Result::Err("Cannot perform '/' operator on non-numeric type."));
+                .unwrap_or(Result::Err("Cannot perform '/' operator on non-numeric type.".to_string()));
 
             return result;
         }
@@ -180,13 +180,13 @@ impl MathOps for Env {
             let result = total
                 .map(|x| Ok(Expr::Atom(Atom::Number(BigDecimal::from(1) / x))))
                 .unwrap_or(
-                    Err("Cannot perform '/' operator on non-numeric type."));
+                    Err("Cannot perform '/' operator on non-numeric type.".to_string()));
 
             return result;
         }
     }
 
-    fn modulo(&mut self, args: &Vec<Expr>) -> Result<Expr, &str> {
+    fn modulo(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         let total: Option<BigDecimal> = args
             .first()
             .and_then(|x| match x {
@@ -200,18 +200,18 @@ impl MathOps for Env {
         if args.len() == 2 {
             let result = total
                 .map(|n| apply_first_rest(self, n, &args[1..].to_vec(), |a, b| a.rem(b), "%"))
-                .unwrap_or(Result::Err("Cannot perform '%' operator on non-numeric type."));
+                .unwrap_or(Result::Err("Cannot perform '%' operator on non-numeric type.".to_string()));
 
             return result;
         }
         else {
-            return Err("Incorrect argument count for '%' operator.");
+            return Err("Incorrect argument count for '%' operator.".to_string());
         }
     }
 }
 
 fn apply_first_rest(env: &Env, car: BigDecimal, cdr: &Vec<Expr>,
-        op: fn(BigDecimal, BigDecimal) -> BigDecimal, op_name: &str) -> Result<Expr, &str> {
+        op: fn(BigDecimal, BigDecimal) -> BigDecimal, op_name: &str) -> Result<Expr, String> {
     let mut total = car;
     let mut local_env = env.clone();
 
@@ -224,10 +224,11 @@ fn apply_first_rest(env: &Env, car: BigDecimal, cdr: &Vec<Expr>,
                     Expr::Atom(atom) => match atom {
                         Atom::Number(n) => Result::Ok(n),
                         _ => Result::Err(
-                            format!("Non-number atom cannot have operator '{}' applied to it.", op_name))
+                            format!("Non-number atom cannot have operator '{}' applied to it.", op_name)
+                                .to_string())
                     },
                     Expr::List(_) => Result::Err(
-                        format!("List cannot have operator '{}' applied to it.", op_name))
+                        format!("List cannot have operator '{}' applied to it.", op_name).to_string())
                 };
 
                 match number {
