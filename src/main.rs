@@ -10,7 +10,6 @@ use std::io::Write;
 use std::io;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
-use crate::syntax::LambdaDef;
 use crate::env::EnvTrait;
 use crate::env::Env;
 
@@ -79,25 +78,11 @@ fn print_atom(expr_atom: &Atom) -> String {
         Atom::Number(n) => n.to_string(),
         Atom::Symbol(s) => s.to_string(),
         Atom::Nil => crate::syntax::NIL_LIT.to_string(),
-        Atom::Lambda(ld) => print_lambda(ld)
+        // TODO: Fix this and add compatibility for LAMBDA
+        _ => "I guess we're just gonna blow up now.".to_string()
     };
 
     return result;
-}
-
-fn print_lambda(lambda: &LambdaDef) -> String {
-    // create new string with lambda at start.
-    let mut acc = String::new();
-    
-    acc.push('(');
-    acc.push_str(crate::syntax::FUN_OP);
-    acc.push(' ');
-    acc.push_str(&print_list(&lambda.params));
-    acc.push(' ');
-    acc.push_str(&print_tree(&*lambda.body));
-    acc.push(')');
-    
-    return acc;
 }
 
 fn print_list(expr_list: &Vec<Expr>) -> String {
