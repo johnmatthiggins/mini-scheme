@@ -36,7 +36,7 @@ fn parse_atom(atom: &String) -> Expr {
     else if is_boolean(atom) {
         return Expr::Atom(Atom::Boolean(atom == "#t"));
     }
-    else if atom == "nil" {
+    else if atom == crate::syntax::NIL_LIT {
         return Expr::Atom(Atom::Nil);
     }
     else {
@@ -118,7 +118,8 @@ pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
 fn is_boolean(atom: &String) -> bool {
     // Boolean literals are '#f' and '#t'
     // for true and false respectively.
-    let is_boolean = atom == "#f" ||  atom == "#t";
+    let is_boolean = atom == crate::syntax::FALSE_LIT
+        ||  atom == crate::syntax::TRUE_LIT;
 
     return is_boolean;
 }

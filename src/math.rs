@@ -106,7 +106,7 @@ impl MathOps for Env {
         
         if args.len() > 1 {
             let result = total
-                .map(|n| sub_car_cdr(self, n, &args[1..].to_vec()))
+                .map(|n| apply_first_rest(self, n, &args[1..].to_vec(), |a, b| a - b, "-"))
                 .unwrap_or(Result::Err("Cannot perform '-' operator on non-numeric type.".to_string()));
 
             return result;
@@ -171,7 +171,7 @@ impl MathOps for Env {
         
         if args.len() > 1 {
             let result = total
-                .map(|n| div_car_cdr(self, n, &args[1..].to_vec()))
+                .map(|n| apply_first_rest(self, n, &args[1..].to_vec(), |a, b| a / b, "/"))
                 .unwrap_or(Result::Err("Cannot perform '/' operator on non-numeric type.".to_string()));
 
             return result;
@@ -199,7 +199,7 @@ impl MathOps for Env {
         
         if args.len() == 2 {
             let result = total
-                .map(|n| mod_car_cdr(self, n, &args[1..].to_vec()))
+                .map(|n| apply_first_rest(self, n, &args[1..].to_vec(), |a, b| a.rem(b), "%"))
                 .unwrap_or(Result::Err("Cannot perform '%' operator on non-numeric type.".to_string()));
 
             return result;
@@ -210,11 +210,13 @@ impl MathOps for Env {
     }
 }
 
-fn sub_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, String> {
+fn apply_first_rest(env: &Env, car: BigDecimal, cdr: &Vec<Expr>,
+        op: fn(BigDecimal, BigDecimal) -> BigDecimal, op_name: &str) -> Result<Expr, String> {
     let mut total = car;
+    let mut local_env = env.clone();
 
     for expr in cdr.into_iter() {
-        let simple_tree = env.to_owned().simplify(expr);
+        let simple_tree = local_env.simplify(expr);
 
         match simple_tree {
             Ok(tree) => {
@@ -222,83 +224,16 @@ fn sub_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, Stri
                     Expr::Atom(atom) => match atom {
                         Atom::Number(n) => Result::Ok(n),
                         _ => Result::Err(
-                            "Non-number atom cannot have operator '-' applied to it.".to_string())
+                            format!("Non-number atom cannot have operator '{}' applied to it.", op_name)
+                                .to_string())
                     },
                     Expr::List(_) => Result::Err(
-                        "List cannot have operator '-' applied to it.".to_string())
+                        format!("List cannot have operator '{}' applied to it.", op_name).to_string())
                 };
 
                 match number {
                     Ok(n) => {
-                        total -= n;
-                    },
-                    Err(msg) => {
-                        return Result::Err(msg);
-                    }
-                }
-            },
-            Err(msg) => return Result::Err(msg)
-        };
-    }
-
-    return Result::Ok(Expr::Atom(Atom::Number(total)));
-}
-
-fn div_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, String> {
-    let mut total = car;
-
-    for expr in cdr.into_iter() {
-        let simple_tree = env.to_owned().simplify(expr);
-
-        match simple_tree {
-            Ok(tree) => {
-                let number = match tree {
-                    Expr::Atom(atom) => match atom {
-                        Atom::Number(n) => Result::Ok(n),
-                        _ => Result::Err(
-                            "Non-number atom cannot have operator '/' applied to it.".to_string())
-                    },
-                    Expr::List(_) => Result::Err(
-                        "List cannot have operator '/' applied to it.".to_string())
-                };
-
-                match number {
-                    Ok(n) => {
-                        total = total / n;
-                    },
-                    Err(msg) => {
-                        return Result::Err(msg);
-                    }
-                }
-            },
-            Err(msg) => return Result::Err(msg)
-        };
-    }
-
-    return Result::Ok(Expr::Atom(Atom::Number(total)));
-}
-
-fn mod_car_cdr(env: &Env, car: BigDecimal, cdr: &Vec<Expr>) -> Result<Expr, String> {
-    let mut total = car;
-
-    for expr in cdr.into_iter() {
-        let simple_tree = env.to_owned().simplify(expr);
-
-        match simple_tree {
-            Ok(tree) => {
-                let number = match tree {
-                    Expr::Atom(atom) => match atom {
-                        Atom::Number(n) => Result::Ok(n),
-                        _ => Result::Err(
-                            "Non-number atom cannot have operator '%' applied to it.".to_string())
-                    },
-                    Expr::List(_) => Result::Err(
-                        "List cannot have operator '%' applied to it.".to_string())
-                };
-
-                match number {
-                    Ok(n) => {
-                        total = total.rem(n);
+                        total = op(total, n);
                     },
                     Err(msg) => {
                         return Result::Err(msg);

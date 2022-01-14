@@ -22,6 +22,11 @@ pub const OR_OP: &str = "or";
 pub const AND_OP: &str = "and";
 pub const NOT_OP: &str = "not";
 
+// literals
+pub const FALSE_LIT: &str = "#f";
+pub const TRUE_LIT: &str = "#t";
+pub const NIL_LIT: &str = "nil";
+
 #[derive(Clone, PartialEq, Eq)]
 pub struct LambdaDef {
     pub params: Vec<Expr>,

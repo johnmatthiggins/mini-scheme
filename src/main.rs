@@ -71,13 +71,13 @@ fn print_tree(expr_tree: &Expr) -> String {
 fn print_atom(expr_atom: &Atom) -> String {
     let result = match expr_atom {
         Atom::Boolean(b) => match b {
-            true => "#t".to_string(),
-            false => "#f".to_string()
+            true => crate::syntax::TRUE_LIT.to_string(),
+            false => crate::syntax::FALSE_LIT.to_string()
         },
         Atom::StringLiteral(s) => s.to_string(),
         Atom::Number(n) => n.to_string(),
         Atom::Symbol(s) => s.to_string(),
-        Atom::Nil => "nil".to_string(),
+        Atom::Nil => crate::syntax::NIL_LIT.to_string(),
         // TODO: Fix this and add compatibility for LAMBDA
         _ => "I guess we're just gonna blow up now.".to_string()
     };
