@@ -66,22 +66,22 @@ impl EnvTrait for Env {
 
         if !self.contains_key(func) {
            let result = match func.as_str() {
-                "=" => self.eq(args),
-                "+" => self.add(args),
-                "-" => self.sub(args),
-                "*" => self.mul(args),
-                "/" => self.div(args),
-                "%" => self.modulo(args),
-                "car" => self.car(args),
-                "cdr" => self.cdr(args),
-                "quote" => self.quote(args),
-                "not" => self.not(args),
-                "and" => self.and(args),
-                "or" => self.or(args),
-                "atom" => self.atom(args),
-                "if" => self.if_op(args),
-                "define" => self.define(args),
-                "lambda" => self.lambda(args),
+                crate::syntax::EQ_OP => self.eq(args),
+                crate::syntax::ADD_OP => self.add(args),
+                crate::syntax::SUB_OP => self.sub(args),
+                crate::syntax::MUL_OP => self.mul(args),
+                crate::syntax::DIV_OP => self.div(args),
+                crate::syntax::MOD_OP => self.modulo(args),
+                crate::syntax::CAR_OP => self.car(args),
+                crate::syntax::CDR_OP => self.cdr(args),
+                crate::syntax::QT_OP => self.quote(args),
+                crate::syntax::NOT_OP => self.not(args),
+                crate::syntax::AND_OP => self.and(args),
+                crate::syntax::OR_OP => self.or(args),
+                crate::syntax::ATM_OP => self.atom(args),
+                crate::syntax::IF_OP => self.if_op(args),
+                crate::syntax::DEF_OP => self.define(args),
+                crate::syntax::FUN_OP => self.lambda(args),
                 _ => Result::Err("Function name not recognized.".to_string())
             };
             
