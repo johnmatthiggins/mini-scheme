@@ -96,6 +96,7 @@ fn print_lambda(lambda: &LambdaDef) -> String {
     acc.push(' ');
     acc.push_str(&print_tree(&*lambda.body));
     acc.push(')');
+    acc.push(')');
     
     return acc;
 }
@@ -107,15 +108,14 @@ fn print_list(expr_list: &Vec<Expr>) -> String {
         if i == 0 {
             acc.push('(');
             acc.push_str(&print_tree(exp));
+            acc.push(' ');
         }
-        else {
+        else if i == expr_list.len() - 1 {
             acc.push_str(&print_tree(exp));
-        }
-        
-        if i == expr_list.len() - 1 {
             acc.push(')');
         }
         else {
+            acc.push_str(&print_tree(exp));
             acc.push(' ');
         }
     }
