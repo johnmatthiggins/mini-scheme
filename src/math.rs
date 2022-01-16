@@ -1,6 +1,5 @@
 use bigdecimal::BigDecimal;
 use core::ops::Rem;
-use core::ops::Neg;
 use crate::env::Env;
 use crate::env::EnvTrait;
 use crate::syntax::Expr;
@@ -13,6 +12,12 @@ pub trait MathOps {
     fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn modulo(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+}
+
+struct OpInfo {
+    name: String,
+    op_fn: fn(&BigDecimal, &BigDecimal) -> BigDecimal,
+    default: BigDecimal
 }
 
 impl MathOps for Env {
@@ -66,13 +71,6 @@ impl MathOps for Env {
                         "List cannot have operator '+' applied to it.".to_string())
                 };
 
-                // if number.is_ok() {
-                //     total = total + number.unwrap();
-                // }
-                // else {
-                //     return Result::Err("Error".to_string());
-                // }
-                
                 match number {
                     Ok(v) => {
                         total += v;
@@ -91,34 +89,13 @@ impl MathOps for Env {
     }
 
     fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
-        // If only one argument, return negated number.
-        // If multiple, start total as first arg,
-        // then subtract every arg after that.
-        let total: Option<BigDecimal> = args
-            .first()
-            .and_then(|x| match x {
-                Expr::Atom(atom) => match atom {
-                    Atom::Number(n) => Some(n.to_owned()),
-                    _ => None
-                },
-                Expr::List(_) => None
-            });
-        
-        if args.len() > 1 {
-            let result = total
-                .map(|n| apply_first_rest(self, n, &args[1..].to_vec(), |a, b| a - b, "-"))
-                .unwrap_or(Result::Err("Cannot perform '-' operator on non-numeric type.".to_string()));
+        let op_info = OpInfo {
+            name: String::from("-"),
+            op_fn: |a, b| a - b,
+            default: BigDecimal::from(0)
+        };
 
-            return result;
-        }
-        else {
-            let result = total
-                .map(|x| Ok(Expr::Atom(Atom::Number(x.neg()))))
-                .unwrap_or(
-                    Err("Cannot perform '-' operator on non-numeric type.".to_string()));
-
-            return result;
-        }
+        return apply_neg_op(&self, args, &op_info);
     }
 
     fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
@@ -156,51 +133,25 @@ impl MathOps for Env {
     }
 
     fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
-        // If only one argument, return negated number.
-        // If multiple, start total as first arg,
-        // then subtract every arg after that.
-        let total: Option<BigDecimal> = args
-            .first()
-            .and_then(|x| match x {
-                Expr::Atom(atom) => match atom {
-                    Atom::Number(n) => Some(n.to_owned()),
-                    _ => None
-                },
-                Expr::List(_) => None
-            });
-        
-        if args.len() > 1 {
-            let result = total
-                .map(|n| apply_first_rest(self, n, &args[1..].to_vec(), |a, b| a / b, "/"))
-                .unwrap_or(Result::Err("Cannot perform '/' operator on non-numeric type.".to_string()));
+        let op_info = OpInfo {
+            name: String::from("/"),
+            op_fn: |a, b| a / b,
+            default: BigDecimal::from(1)
+        };
 
-            return result;
-        }
-        else {
-            let result = total
-                .map(|x| Ok(Expr::Atom(Atom::Number(BigDecimal::from(1) / x))))
-                .unwrap_or(
-                    Err("Cannot perform '/' operator on non-numeric type.".to_string()));
-
-            return result;
-        }
+        return apply_neg_op(&self, args, &op_info);
     }
 
     fn modulo(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
-        let total: Option<BigDecimal> = args
-            .first()
-            .and_then(|x| match x {
-                Expr::Atom(atom) => match atom {
-                    Atom::Number(n) => Some(n.to_owned()),
-                    _ => None
-                },
-                Expr::List(_) => None
-            });
-        
         if args.len() == 2 {
-            let result = total
-                .map(|n| apply_first_rest(self, n, &args[1..].to_vec(), |a, b| a.rem(b), "%"))
-                .unwrap_or(Result::Err("Cannot perform '%' operator on non-numeric type.".to_string()));
+            // Specifies default but it'll never actually be used.
+            let op_info = OpInfo {
+                name: String::from("%"),
+                op_fn: |a, b| a.rem(b),
+                default: BigDecimal::from(69)
+            };
+
+            let result = apply_neg_op(self, args, &op_info);
 
             return result;
         }
@@ -210,8 +161,44 @@ impl MathOps for Env {
     }
 }
 
+fn apply_neg_op(env: &Env, args: &Vec<Expr>, info: &OpInfo) -> Result<Expr, String> {
+    let mut local_env = env.to_owned();
+    let total = args.first()
+        .ok_or(format!("Incorrect argument count for '{}' operator.", info.name)
+               .to_string())
+        .and_then(|x| local_env.simplify(x))
+        .and_then(|x| match x {
+            Expr::Atom(atom) => match atom {
+                Atom::Number(n) => Ok(n.to_owned()),
+                _ => Err(format!("Cannot perform '{}' operator on non-numeric type.", info.name)
+                         .to_string())
+            },
+            Expr::List(_) =>
+                Err(format!("Cannot perform '{}' operator on non-numeric type.", info.name)
+                    .to_string())
+        });
+
+    if args.len() > 1 {
+        let result = total
+            .and_then(|n| apply_first_rest(&local_env, n, &args[1..].to_vec(), info.op_fn, &info.name));
+
+        return result;
+    }
+    else {
+        let result = total
+            // .map(|x| Ok(Expr::Atom(Atom::Number(BigDecimal::from(1) / x))))
+            .map(|x| Ok(Expr::Atom(Atom::Number((info.op_fn)(&info.default, &x)))))
+            .unwrap_or(
+                Err(format!("Cannot perform '{}' operator on non-numeric type.", info.name)
+                    .to_string()));
+
+        return result;
+    }
+}
+
 fn apply_first_rest(env: &Env, car: BigDecimal, cdr: &Vec<Expr>,
-        op: fn(BigDecimal, BigDecimal) -> BigDecimal, op_name: &str) -> Result<Expr, String> {
+                    op: fn(&BigDecimal, &BigDecimal) -> BigDecimal,
+                    op_name: &str) -> Result<Expr, String> {
     let mut total = car;
     let mut local_env = env.clone();
 
@@ -233,7 +220,7 @@ fn apply_first_rest(env: &Env, car: BigDecimal, cdr: &Vec<Expr>,
 
                 match number {
                     Ok(n) => {
-                        total = op(total, n);
+                        total = op(&total, &n);
                     },
                     Err(msg) => {
                         return Result::Err(msg);
