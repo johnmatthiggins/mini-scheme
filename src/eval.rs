@@ -11,10 +11,9 @@ pub struct StackFrame {
     pub args: Vec<Expr>,
 }
 
-fn eval_expr(expr: &Expr, mut env: &Env)
-    -> Result<Expr, String> {
+fn eval_expr(expr: &Expr, mut env: &Env) -> Result<Expr, String> {
     // Create stack to store the AST path.
-    let mut path: Vec<u32> = vec::Vec();
+    let mut path: Vec<&Expr> = vec::Vec();
     let mut frames: Vec<StackFrame> = vec::Vec();
     let mut current = Ok(expr);
     let mut level: u32 = 0;
@@ -23,25 +22,26 @@ fn eval_expr(expr: &Expr, mut env: &Env)
     // through every part of the tree.
     loop {
         match expr {
-            Expr::List(expressions) => expressions.first().and_then(|x| x match {
-                Expr::Atom(a1) => {
-                    // Create new stack frame with name of function.
-                    let mut frame = StackFrame {
-                        name: a1,
-                        args: vec::Vec()
-                    };
-                    frames.push(frame);
+            Expr::List(expressions) => expressions.first().and_then(|x|
+                x match {
+                    Expr::Atom(a1) => {
+                        // Create new stack frame with name of function.
+                        let mut frame = StackFrame {
+                            name: a1,
+                            args: vec::Vec()
+                        };
+                        frames.push(frame);
 
-                    // Select next current expression.
-                    current = Ok(expressions[1]);
-                },
-                // Reject expression and end loop because we are not accepting
-                // lists as function names.
-                Expr::List(v1) => {
-                    current = Err("First symbol cannot be list!".to_string());
-                    break;
-                }
-            }),
+                        // Select next current expression.
+                        current = Ok(expressions[1]);
+                    },
+                    // Reject expression and end loop because we are not accepting
+                    // lists as function names.
+                    Expr::List(v1) => {
+                        current = Err("First symbol cannot be list!".to_string());
+                        break;
+                    }
+                }),
             Expr::Atom(a) => {
                 if frames.is_empty() {
                     // End loop if you are done evaluating.
@@ -58,7 +58,18 @@ fn eval_expr(expr: &Expr, mut env: &Env)
         }
     }
 
-    return ;
+    return current;
+}
+
+fn eval_s_expr(func: String, args: &Vec<Expr>, env: Env) -> Result<Expr, String> {
+    let all_atomic_args = args.iter()
+        .all(|x| match x {
+            Expr::Atom() => true,
+            _ => false
+        });
+
+    if all_atomic_args {
+    }
 }
 
 fn walk_tree(expr: &Expr, path: &Vec<u32>) -> Option<Expr> {
