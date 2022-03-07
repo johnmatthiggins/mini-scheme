@@ -4,6 +4,11 @@ use crate::env::Env;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
 
+// Split up into phases:
+// Phase 1: 
+// Phase 2: Substitute symbols for definitions.
+// Phase 3: Iterate through constructed tree.
+
 // This will have to be refactored to allow
 // for LAMBDA evaluations.
 pub struct StackFrame {
