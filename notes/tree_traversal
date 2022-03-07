@@ -1,0 +1,27 @@
+Tree Traversal Algorithm:
+
+What it can do:
+* Replace symbols with their definitions.
+* Reach end of tree level and then return all expressions
+    as arguments to function node.
+* Tell next iteration to evaluate current expression that has been
+    replaced by defined symbol.
+* Uses a stack to tell what scope variables are in. Should be a stack of
+    environment hash maps.
+
+Phases:
+
+* Execution:
+    When we have gathered all args for a level
+    and are ready to transform them all into the
+    next expression.
+
+* Atomic fallback:
+    Once we see and atom, we send it back up the tree to the function
+    call above it. Push onto stack of args.
+
+* Symbol Replacement:
+    Replace symbol with defined expressions.
+
+* Symbol definition fallback:
+    Fallback to evaluating symbol definition.
