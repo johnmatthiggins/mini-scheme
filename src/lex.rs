@@ -26,21 +26,21 @@ pub fn lexical_analysis(code: &String) -> Result<Vec<String>, String> {
  * @param atom Textual element of code that is not a list.
  * @return Typed expression object containing value or symbolic name.
  */
-fn parse_atom(atom: &String) -> Expr {
+fn parse_atom(atom: &String) -> Atom {
     if is_string(atom) {
-        return Expr::Atom(Atom::StringLiteral(atom.to_owned()));
+        Atom::StringLiteral(atom.to_owned());
     }
     else if BigDecimal::from_str(&atom).is_ok() {
-        return Expr::Atom(Atom::Number(BigDecimal::from_str(&atom).unwrap()));
+        Atom::Number(BigDecimal::from_str(&atom).unwrap());
     }
     else if is_boolean(atom) {
-        return Expr::Atom(Atom::Boolean(atom == "#t"));
+        Atom::Boolean(atom == "#t");
     }
     else if atom == crate::syntax::NIL_LIT {
-        return Expr::Atom(Atom::Nil);
+        Atom::Nil;
     }
     else {
-        return Expr::Atom(Atom::Symbol(atom.to_owned()));
+        Atom::Symbol(atom.to_owned());
     }
 }
 
@@ -74,7 +74,7 @@ fn tokens_match_parens(tokens: &Vec<String>) -> bool {
     return unclosed_opens == 0;
 }
 
-pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
+pub fn parse_tokens(tokens: &Vec<String>, tree) -> SyntaxTree {
     // recur for interior levels of expression
     // then add them to the expression list.
     let mut local_expr: Vec<Expr> = Vec::new();
