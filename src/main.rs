@@ -1,19 +1,19 @@
 mod lex;
-mod syntax;
-mod env;
-mod built_in;
 mod math;
+mod scope;
+mod syntax;
 mod boolean;
+mod built_in;
 
-use std::collections::HashMap;
-use std::io::Write;
 use std::io;
+use std::io::Write;
+use std::collections::HashMap;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
+use crate::scope::Scope;
 use crate::syntax::LambdaDef;
-use crate::env::EnvTrait;
-use crate::env::Env;
 
+// Get string from actual config file.
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const PROMPT: &str = "> ";
@@ -22,11 +22,11 @@ fn main() {
     print!("Mini-Scheme Version {}\n\n", VERSION);
 
     // Holds all the predefined functions and values for REPL session.
-    let mut env: Env = HashMap::new();
+    let mut scope: Scope = HashMap::new();
 
     loop {
         let mut input = String::new();
-        
+
         // Print prompt than promptly flush output to sync up.
         print!("{}", PROMPT);
         io::stdout().flush().unwrap();
@@ -44,13 +44,11 @@ fn main() {
                     .unwrap();
 
                 if first_char != ';' {
-                    let result = env.eval(&input);
-
-                    let output = match result {
-                        Ok(expr) => print_tree(&expr),
-                        Err(msg) => msg
-                    };
-
+                    // Evaluate expression using scope.
+                    
+                    // Check for errors and convert to a string.
+                    
+                    // Print out expression.
                     print!("{}\n", &output);
                 }
             }
@@ -60,44 +58,6 @@ fn main() {
             break;
         }
     }
-}
-
-fn print_tree(expr_tree: &Expr) -> String {
-    match expr_tree {
-        Expr::List(v) => print_list(v),
-        Expr::Atom(atom) => print_atom(&atom)
-    }
-}
-
-fn print_atom(expr_atom: &Atom) -> String {
-    let result = match expr_atom {
-        Atom::Boolean(b) => match b {
-            true => crate::syntax::TRUE_LIT.to_string(),
-            false => crate::syntax::FALSE_LIT.to_string()
-        },
-        Atom::StringLiteral(s) => s.to_string(),
-        Atom::Number(n) => n.to_string(),
-        Atom::Symbol(s) => s.to_string(),
-        Atom::Nil => crate::syntax::NIL_LIT.to_string(),
-        Atom::Lambda(ld) => print_lambda(ld)
-    };
-
-    return result;
-}
-
-fn print_lambda(lambda: &LambdaDef) -> String {
-    // create new string with lambda at start.
-    let mut acc = String::new();
-    
-    acc.push('(');
-    acc.push_str(crate::syntax::FUN_OP);
-    acc.push(' ');
-    acc.push_str(&print_list(&lambda.params));
-    acc.push(' ');
-    acc.push_str(&print_tree(&*lambda.body));
-    acc.push(')');
-    
-    return acc;
 }
 
 fn print_list(expr_list: &Vec<Expr>) -> String {

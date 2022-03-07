@@ -1,3 +1,5 @@
-use std::collection::HashMap;
+use std::collections::HashMap;
+use crate::tree::SyntaxTree;
 
-type Scope = HashMap<String, >;
+// Every symbol maps to an expression tree.
+type Scope = HashMap<String, SyntaxTree>;
