@@ -1,12 +1,16 @@
+/**
+ * @file eval.rs
+ * @brief Primary evaluation algorithm used in interperter.
+ *
+ * Evaluates abstract syntax tree.
+ *
+ * @author John M. Higgins (johnmatthiggins@gmail.com)
+ */
+
 use std::collections::HashMap;
 use std::vec::Vec;
 use crate::scope::Scope;
 use crate::syntax::Atom;
-
-// Split up into phases:
-// Phase 1: 
-// Phase 2: Substitute symbols for definitions.
-// Phase 3: Iterate through constructed tree.
 
 // This will have to be refactored to allow
 // for LAMBDA evaluations.
@@ -17,41 +21,48 @@ pub struct StackFrame {
 
 // Tells loop what to do next.
 pub enum TraversalCmd {
-    Identify,
-    ExpandSymbol,
-    DefineSymbol,
-    ReturnValue,
-    ExitLoop
+    Right,
+    Down,
+    Up
 }
 
 fn eval_expr(ast: &SyntaxTree, mut scope: &Scope)
     -> Result<SyntaxTree, String> {
     // Start evaluation with top node.
-    let mut tree = Ok(ast.to_owned());
-    let mut next_cmd = Identify;
-    
-    // Create new stackframes and add scopes to them.
-    let mut scope_stack = Vec::new();
-    scope_stack.push(scope);
+    let mut tree = ast.to_owned();
+    let mut result = Err("Expression could not be evaluated".to_string());
+
+    // create stack of stack frames.
+    let mut stack_frame: Vec<StackFrame> = Vec::new();
     
     // Loop until we get the ExitLoop command.
     loop {
-        let current_scope = scope_stack.last();
-
-        match next_cmd {
-            TraversalCmd::ExitLoop => {
-                break;
-            },
-            TraversalCmd::Identify => {
-            },
-            TraversalCmd::ExpandSymbol => {
-            },
-            TraversalCmd::DefineSymbol => {
-            },
-            TraversalCmd::ReturnValue => {
-            },
+        if stack_frames.is_empty() {
+            // We don't have anything else left to evaluate.
+            if tree.children.is_empty() {
+                // Set as result and end loop.
+            }
+            // We have more to evaluate so we have to step down.
+            else {
+                // Add Symbol to stackframe
+                // add stackframe to stack.
+                // Grab first child and set as next tree.
+            }
+        }
+        else {
+            // Give message to go right if this is not the last child,
+            // or go up if it is the last child.
+            if tree.children.is_empty() {
+                // add token to stack frame above.
+                // then move right to sibling node.
+            }
+            // Going downwards.
+            else {
+                // add token to new stack frame.
+                // Then give the command to move up.
+            }
         }
     }
 
-    return next_tree;
+    return result;
 }

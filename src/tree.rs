@@ -1,18 +1,18 @@
-// @file tree.rs
-// @brief Bindings for creating an lisp abstract syntax tree.
-//
-// This file contains the AST data structure that is used
-// to parse tokens into a tree. This tree must be mutable as
-// it needs to have some symbols substituted for their definitions.
-//
-// @author johnmatthiggins@gmail.com
-//
+/**
+ * @file tree.rs
+ * @brief Bindings for creating a lisp abstract syntax tree.
+ *
+ * This file contains the AST data structure that is used
+ * to parse tokens into a tree. This tree must be mutable as
+ * it needs to have some symbols substituted for their definitions.
+ *
+ * @author John M. Higgins (johnmatthiggins@gmail.com)
+ */
 
 use std::vec::Vec;
 use std::string::ToString;
 use bigdecimal::BigDecimal;
 
-// This will be the mutable substitute for "Expr" struct.
 pub struct SyntaxTree {
     pub token: Atom,
     pub children: Vec<SyntaxTree>

@@ -28,19 +28,13 @@ pub const TRUE_LIT: &str = "#t";
 pub const NIL_LIT: &str = "()";
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct LambdaDef {
-    pub params: Vec<Expr>,
-    pub body: Box<Expr>
-}
-
-#[derive(Clone, PartialEq, Eq)]
 pub enum Atom {
-   Boolean(bool),
-   StringLiteral(String),
-   Number(BigDecimal),
-   Symbol(String),
-   Lambda(LambdaDef),
-   Nil
+    Boolean(bool),
+    StringLiteral(String),
+    Number(BigDecimal),
+    Symbol(String),
+    Definition(String),
+    Nil
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -56,8 +50,6 @@ impl ToString for Atom {
             Atom::StringLiteral(s) => s,
             Atom::Number(n) => n.to_string(),
             Atom::Symbol(s) => s,
-            // TODO: Actually implement this.
-            Atom::LambdaDef(l) => "ERROR".to_string(),
             Atom::Nil => NIL_LIT.to_string()
         }
     }
