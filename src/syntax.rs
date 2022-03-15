@@ -43,14 +43,21 @@ pub enum Expr {
     Atom(Atom)
 }
 
-impl ToString for Atom {
-    fn to_string(&self) -> String {
-        match self {
-            Atom::Boolean(b) => b.to_string(),
-            Atom::StringLiteral(s) => s,
-            Atom::Number(n) => n.to_string(),
-            Atom::Symbol(s) => s,
-            Atom::Nil => NIL_LIT.to_string()
-        }
-    }
+pub trait ExprOps {
+	fn grab_node(&self, path: &Vec<u32>) -> Option<Expr>;
+	fn is_leaf(&self) -> bool;
+}
+
+impl Expr for ExprOps {
+	fn grab_node(&self, path: &Vec<u32>) -> Option<Expr> {
+		// write algorithm for grabbing node.
+	}
+		
+	// check whether it has children or not.
+	fn is_leaf(&self) -> bool {
+		match self {
+			Expr::Atom(_) => true,
+			_ => false
+		}
+	}
 }
