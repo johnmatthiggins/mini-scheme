@@ -77,8 +77,7 @@ fn eval_expr(ast: &Expr) -> Result<Expr, String> {
                         }
                     }
                 }
-                else {
-                    
+                else {  
                 }
 
                 // If stack args aren't full move to sibling node.
@@ -121,11 +120,22 @@ fn exec_stackframe(line: Vec<Expr>) -> Result<Expr, String> {
     }
 }
 
-fn next_sibling(ast: &Expr, path: &Vec<u32>) -> Option<Expr> {
+fn next_sibling(root: &Expr, path: &Vec<u32>) -> Option<Expr> {
     // Find sibling based on path.
+    let mut result = Option::None; 
+    let mut current_path = path.clone();
+    let mut current_exp = root.to_owned();
+
+    // Loop until you find a row that has a larger node count
+    // than the current path index.
+    // Then return that expression and the new path.
 }
 
-fn get_parent(ast: &Expr, path: &Vec<u32>) -> Option<Expr> {
+// Get number of nodes in current branch on tree.
+fn get_row_length(node: &Expr, path: &Vec<u32>) -> Option<Expr> {
+}
+
+fn get_parent(root: &Expr, path: &Vec<u32>) -> Option<Expr> {
 }
 
 // Maps function names to their real world operations.
