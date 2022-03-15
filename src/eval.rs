@@ -21,37 +21,47 @@ pub struct StackFrame {
     pub args: Vec<Expr>,
 }
 
-// Tells loop what to do next.
-pub enum TraversalCmd {
-    Right,
-    Down,
-    Up
-}
-
 fn eval_expr(ast: &Expr) -> Result<Expr, String> {
-    // Start evaluation with top node.
-	let mut current = ast;
+	if ast.is_leaf() {
+		// Start evaluation with top node.
+		let mut current = ast;
 
-	// We have this here so we can reset it later.
-    let mut result = Err(String::from("Expression could not be evaluated"));
+		// We have this here so we can reset it later.
+		let mut result = Err(
+			String::from("Expression could not be evaluated"));
 
-    // create stack of stack frames.
-    let mut frames: Vec<StackFrame> = Vec::new();
-	let mut path: Vec<u32> = Vec::new();
-    
-    // Loop until we get the ExitLoop command.
-    loop {
-		if !frames.is_empty() && current.is_leaf() {
-			result = Ok(current);
-			break;
+		// create stack of stack frames.
+		let mut frames: Vec<StackFrame> = Vec::new();
+		let mut path: Vec<u32> = Vec::new();
+
+		frames.push(StackFrame::new());
+		
+		// Loop until we get the ExitLoop command.
+		loop {
+			if current.is_leaf() {
+				// Add to stack frame.
+				match frames.last_mut() {
+					Some(frame) => {
+						// chnage by reference.
+						frame.push(current);
+					},
+					None => // Exit loop
+				}
+				
+				// If stack args are full, execute function.
+					// Then put result onto stack and move to upper node.
+					// Exit loop if stack is empty.
+				
+				// If stack args aren't full move to sibling node.
+			}
+			else {
+			}
 		}
-		else {
-			let parent_path	= &path[1..].to_vec();
-			let parent = ast.grab_node(parent_path);
-		}
-    }
 
-    return result;
+		result;
+	}
+	else {
+	}
 }
 
 fn exec_stackframe(line: Vec<Expr>) -> Result<Expr, String> {
@@ -75,6 +85,10 @@ fn exec_stackframe(line: Vec<Expr>) -> Result<Expr, String> {
 			},
 		None => Err("Cannot execute blank expression!")
 	}
+}
+
+fn next_sibling(ast: &Expr, path: &Vec<u32>) -> Option<Expr> {
+	// Find sibling based on path.
 }
 
 // Maps function names to their real world operations.
