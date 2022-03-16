@@ -13,31 +13,92 @@ use std::vec::Vec;
 use std::string::ToString;
 use bigdecimal::BigDecimal;
 
-pub struct SyntaxTree {
-    pub token: Atom,
-    pub children: Vec<SyntaxTree>
+// This will have to be refactored to allow
+// for LAMBDA evaluations.
+pub struct StackFrame {
+    pub args: Vec<Expr>,
 }
 
-// For printing out syntax tree.
-impl ToString for SyntaxTree {
-    fn to_string(&self) -> String {
-        if self.children.is_empty() {
-            token.to_string();
-        }
-        else {
-            let mut output = String::from("(");
+pub struct Traversal {
+    pub call_stack: Vec<StackFrame>,
+    pub path: Vec<u32>,
+    pub root: Expr
+    pub current: &Expr
+}
 
-            for i in (0..self.children.len()) {
-                if i != 0 {
-                    output.push(' ');
+pub fn init_traversal(root: Expr) -> Traversal {
+    let traversal = Traversal {
+        call_stack: Vec::new(),
+        path: vec![0],
+        root: root,
+        current: &root
+    };
+
+    return traversal;
+}
+
+pub trait TraversalOps {
+    pub fn run(&mut self) -> Result<Expr, String>;
+}
+
+impl Traversal for TraversalOps {
+    fn run(&mut self) -> Result<Expr, String> { 
+        // Loop until we get the ExitLoop command.
+        loop {
+            if current.is_leaf() {
+                // Add to stack frame.
+                match frames.last_mut() {
+                    Some(frame) => {
+                            // chnage by reference.
+                            frame.args.push(current);
+                    },
+                    None => // Exit loop
+                }
+                    
+                // If stack args are full, execute function.
+                    // Then put result onto stack and move to upper node.
+                    // Exit loop if stack is empty.
+                let sibling_count = get_parent(current)
+                        .and_then(|x| (u32)x.len())
+                        .or(0);
+
+                let curr_frame = frames.last().unwrap();
+                let curr_arg_count = curr_frame.args.len();
+            
+                if sibling_count == curr_arg_count {
+                    result = exec_stackframe(curr_frame);
+                
+                    // grab path excluding last turn.
+                    let rest_of_path = path.split_last()
+                        .and_then(|x| x.1)
+                        .or(Vec::new());
+                    
+                    // If the list isn't long enough, just exit and return our result. 
+                    match rest_of_path {
+                        Some(v) => {
+                            path = v.to_vec();
+                        },
+                        None => {
+                            exit = true;
+                        }
+                    }
+                }
+                else {  
                 }
 
-                output.push(self.children[i].to_string());
+                // If stack args aren't full move to sibling node.
             }
-    
-            output.push(')');
+            else {
+                
+            }
             
-            output;
+            if exit {
+                break;
+            }
         }
+
+        result;
+    }
+    else {
     }
 }

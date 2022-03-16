@@ -15,12 +15,6 @@ use crate::syntax::Expr;
 use crate::syntax::ExprOps;
 use crate::syntax;
 
-// This will have to be refactored to allow
-// for LAMBDA evaluations.
-pub struct StackFrame {
-    pub args: Vec<Expr>,
-}
-
 fn eval_expr(ast: &Expr) -> Result<Expr, String> {
     if ast.is_leaf() {
         // Start evaluation with top node.
@@ -60,7 +54,7 @@ fn eval_expr(ast: &Expr) -> Result<Expr, String> {
                 let curr_arg_count = curr_frame.args.len();
             
                 if sibling_count == curr_arg_count {
-                    result = exec_stackframe();
+                    result = exec_stackframe(curr_frame);
                 
                     // grab path excluding last turn.
                     let rest_of_path = path.split_last()
