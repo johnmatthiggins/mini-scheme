@@ -41,18 +41,24 @@ pub trait TraversalOps {
     pub fn run(&mut self) -> Result<Expr, String>;
 }
 
+// Primary evaluation algorithm for interpreter.
 impl Traversal for TraversalOps {
     fn run(&mut self) -> Result<Expr, String> { 
         // Loop until we get the ExitLoop command.
         loop {
-            if current.is_leaf() {
+            if self.current.is_leaf() {
                 // Add to stack frame.
-                match frames.last_mut() {
-                    Some(frame) => {
-                            // chnage by reference.
-                            frame.args.push(current);
+                match self.call_stack.last_mut() {
+                    Some(stack_frame) => {
+                            // change by reference.
+                            stack_frame.args.push(current);
                     },
-                    None => // Exit loop
+                    None => {
+                        // If arg stack is empty and first node is leaf,
+                        // just return it.
+                        result = Ok(self.current.to_owned());
+                        break;
+                    }
                 }
                     
                 // If stack args are full, execute function.
@@ -67,6 +73,9 @@ impl Traversal for TraversalOps {
             
                 if sibling_count == curr_arg_count {
                     result = exec_stackframe(curr_frame);
+
+                    // Add result to stackframe if it resulted in Ok()
+                    // Then move up to parent nodes until a sibling exists.
                 
                     // grab path excluding last turn.
                     let rest_of_path = path.split_last()
@@ -83,13 +92,31 @@ impl Traversal for TraversalOps {
                         }
                     }
                 }
-                else {  
+                else {
+                    // Add one to it to get next sibling.
+                    let mut last = sibling_path.last_mut();
+                    last += 1;
+                    
+                    // because current is leaf, we can push onto arg stack.
+                    self.current = self.call_stack.args.last().unwrap().push(self.current);
+                
+                    // then we assign current as next child in line.
+                    self.current = get_child(self.root, self.path);
                 }
 
                 // If stack args aren't full move to sibling node.
             }
             else {
+                // Move down.
+                self.path.push(0);
+                self.current = get_child(&self.root, &self.path).unwrap();
                 
+                // Add new stack frames as we move down. 
+                let next_frame = StackFrame {
+                    args = Vec::new()
+                };
+
+                self.call_stack.push();
             }
             
             if exit {
@@ -97,8 +124,6 @@ impl Traversal for TraversalOps {
             }
         }
 
-        result;
-    }
-    else {
+        return result;
     }
 }

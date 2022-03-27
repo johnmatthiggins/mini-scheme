@@ -13,82 +13,18 @@ use crate::scope::Scope;
 use crate::syntax::Atom;
 use crate::syntax::Expr;
 use crate::syntax::ExprOps;
+use crate::tree::Traversal;
+use crate::tree::TraversalOps;
 use crate::syntax;
 
 fn eval_expr(ast: &Expr) -> Result<Expr, String> {
-    if ast.is_leaf() {
-        // Start evaluation with top node.
-        let mut current = ast;
-
-        // We have this here so we can reset it later.
-        let mut result = Err(
-            String::from("Expression could not be evaluated"));
-
-        // create stack of stack frames.
-        let mut frames: Vec<StackFrame> = Vec::new();
-        let mut path: Vec<u32> = Vec::new();
-        let mut exit: bool = false;
-
-        frames.push(StackFrame::new());
-            
-        // Loop until we get the ExitLoop command.
-        loop {
-            if current.is_leaf() {
-                // Add to stack frame.
-                match frames.last_mut() {
-                    Some(frame) => {
-                            // chnage by reference.
-                            frame.args.push(current);
-                    },
-                    None => // Exit loop
-                }
-                    
-                // If stack args are full, execute function.
-                    // Then put result onto stack and move to upper node.
-                    // Exit loop if stack is empty.
-                let sibling_count = get_parent(current)
-                        .and_then(|x| (u32)x.len())
-                        .or(0);
-
-                let curr_frame = frames.last().unwrap();
-                let curr_arg_count = curr_frame.args.len();
-            
-                if sibling_count == curr_arg_count {
-                    result = exec_stackframe(curr_frame);
-                
-                    // grab path excluding last turn.
-                    let rest_of_path = path.split_last()
-                        .and_then(|x| x.1)
-                        .or(Vec::new());
-                    
-                    // If the list isn't long enough, just exit and return our result. 
-                    match rest_of_path {
-                        Some(v) => {
-                            path = v.to_vec();
-                        },
-                        None => {
-                            exit = true;
-                        }
-                    }
-                }
-                else {  
-                }
-
-                // If stack args aren't full move to sibling node.
-            }
-            else {
-                
-            }
-            
-            if exit {
-                break;
-            }
-        }
-
-        result;
-    }
-    else {
-    }
+    // initialize traversal.
+    let mut traverse = init_traversal(ast.to_owned()); 
+    
+    // Run traversal and get results.
+    let result = traverse.run();
+    
+    return result;
 }
 
 fn exec_stackframe(line: Vec<Expr>) -> Result<Expr, String> {
@@ -117,19 +53,57 @@ fn exec_stackframe(line: Vec<Expr>) -> Result<Expr, String> {
 fn next_sibling(root: &Expr, path: &Vec<u32>) -> Option<Expr> {
     // Find sibling based on path.
     let mut result = Option::None; 
-    let mut current_path = path.clone();
+    let mut sibling_path = path.clone();
     let mut current_exp = root.to_owned();
+    
+    let mut last = sibling_path.last_mut();
+    // Add one to it to get next sibling.
+    last += 1;
 
     // Loop until you find a row that has a larger node count
     // than the current path index.
     // Then return that expression and the new path.
 }
 
-// Get number of nodes in current branch on tree.
-fn get_row_length(node: &Expr, path: &Vec<u32>) -> Option<Expr> {
+fn get_child(root: &Expr, path: &Vec<u32>) -> Option<&Expr> {
+    let mut current = root;
+    let mut levels_traveled = 0;
+
+    // Get total number of steps required.
+    let step_count = path.len();
+
+    loop {
+        match current {
+            Expr::List(list) => {
+                let next_index = path.get(levels_traveled);
+                current = &list.get(next_index).unwrap();
+                
+                // increment levels traveled.
+                levels_traveled += 1;
+            }
+            _ => { break; }
+        }
+    }
+    
+    // If we walked the right number of steps.
+    if levels_traveled == step_count {
+        Some(current.to_owned());
+    }
+    // If the right number of steps through tree were not taken,
+    // just return nothing.
+    else {
+        None;
+    }
 }
 
+// Get node on top of current node path.
 fn get_parent(root: &Expr, path: &Vec<u32>) -> Option<Expr> {
+    let mut parent_path = path.to_owned();
+    parent_path.pop();
+
+    let result = get_child(root, parent_path);
+
+    return result;
 }
 
 // Maps function names to their real world operations.
