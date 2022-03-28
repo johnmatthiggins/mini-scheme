@@ -7,14 +7,12 @@
 To implement a minimal Lisp Read-Eval-Print-Loop. There are only a few
 keywords used in this implementation.
 
-* atom
 * lambda
-* '
+* quote
 * =
-* cond
-* cons
 * car
 * cdr
+* if
 * and
 * or
 * not
@@ -29,3 +27,24 @@ mathematical programs.
 * %
 * \>
 * <
+
+## Results
+
+Example REPL Session:
+
+```
+> (define n 1)
+n
+> (define add2 (lambda m (+ m 2)))
+add2
+> (add2 n)
+3
+> (define list (quote (5 4 3 2 1)))
+list
+> list
+(5 4 3 2 1)
+> (car list)
+5
+> (cdr list)
+(4 3 2 1)
+```
