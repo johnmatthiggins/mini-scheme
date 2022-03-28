@@ -38,20 +38,11 @@ pub fn init_traversal(root: Expr) -> Traversal {
 }
 
 pub trait TraversalOps {
-    fn find_next(&mut self);
     pub fn run(&mut self) -> Result<Expr, String>;
 }
 
 // Primary evaluation algorithm for interpreter.
 impl Traversal for TraversalOps {
-    fn find_next(&mut self) {
-        loop {
-            // Stackframe should have new Expr added to it from current iteration.
-            // Path should be one less element because we are going to search for siblings.
-            // 
-        }
-    }
-
     fn run(&mut self) -> Result<Expr, String> { 
         // Loop until we get the ExitLoop command.
         loop {
@@ -73,7 +64,7 @@ impl Traversal for TraversalOps {
                 // If stack args are full, execute function.
                     // Then put result onto stack and move to upper node.
                     // Exit loop if stack is empty.
-                let sibling_count = get_parent(current)
+                let sibling_count = get_parent(self.root, self.path)
                         .and_then(|x| match x {
                             Expr::List(l) => (u32)l.len(),
                             _ => None
@@ -109,7 +100,7 @@ impl Traversal for TraversalOps {
                     last += 1;
                     
                     // then we assign current as next child in line.
-                    self.current = get_child(self.root, self.path);
+                    self.current = self.root.get_child(self.path);
                 }
             }
             else {

@@ -42,7 +42,7 @@ fn add_op(args: &Vec<Expr>) -> Result<Expr, String> {
         default: BigDecimal::from(0)
     };
 
-    apply_op(default, args, op_info.op_fn, op_info.name);
+    return apply_op(default, args, op_info.op_fn, op_info.name);
 }
 
 fn sub_op(args: &Vec<Expr>) -> Result<Expr, String> {
@@ -52,7 +52,7 @@ fn sub_op(args: &Vec<Expr>) -> Result<Expr, String> {
         default: BigDecimal::from(0)
     };
 
-    apply_neg_op(args, &op_info);
+    return apply_neg_op(args, &op_info);
 }
 
 fn mul_op(args: &Vec<Expr>) -> Result<Expr, String> {
@@ -62,7 +62,7 @@ fn mul_op(args: &Vec<Expr>) -> Result<Expr, String> {
         default: BigDecimal::from(1)
     };
 
-    apply_op(default, args, op_info.op_fn, op_info.name);
+    return apply_op(default, args, op_info.op_fn, op_info.name);
 }
 
 fn div_op(args: &Vec<Expr>) -> Result<Expr, String> {
@@ -72,7 +72,7 @@ fn div_op(args: &Vec<Expr>) -> Result<Expr, String> {
         default: BigDecimal::from(1)
     };
 
-    apply_neg_op(args, &op_info);
+    return apply_neg_op(args, &op_info);
 }
 
 fn mod_op(args: &Vec<Expr>) -> Result<Expr, String> {
@@ -84,10 +84,10 @@ fn mod_op(args: &Vec<Expr>) -> Result<Expr, String> {
             default: BigDecimal::from(69)
         };
 
-        apply_neg_op(args, &op_info);
+        return apply_neg_op(args, &op_info);
     }
     else {
-        Err("Incorrect argument count for '%' operator.".to_string());
+        return Err(String::from("Incorrect argument count for '%' operator."));
     }
 }
 
@@ -108,10 +108,13 @@ fn apply_neg_op(args: &Vec<Expr>, info: &OpInfo) -> Result<Expr, String> {
         });
 
     if args.len() > 1 {
-        total.and_then(|n| apply_op(n, &args[1..].to_vec(), info.op_fn, &info.name));
+        return total
+            .and_then(|n|
+                apply_op(n, &args[1..].to_vec(), info.op_fn, &info.name));
     }
     else {
-        total.map(|x| Ok(Expr::Atom(Atom::Number((info.op_fn)(&info.default, &x)))))
+        return total
+            .map(|x| Ok(Expr::Atom(Atom::Number((info.op_fn)(&info.default, &x)))))
             .unwrap_or(
                 Err(format!("Cannot perform '{}' operator on non-numeric type.", info.name)
                     .to_string()));
@@ -120,7 +123,7 @@ fn apply_neg_op(args: &Vec<Expr>, info: &OpInfo) -> Result<Expr, String> {
 
 // Every expression must have already been converted to a number.
 fn apply_op(car: BigDecimal, cdr: &Vec<Expr>, op: fn(&BigDecimal, &BigDecimal) -> BigDecimal,
-            op_name: &str) -> Result<Expr, String> {
+            op_name: &String) -> Result<Expr, String> {
     let mut total = car;
 
     for expr in cdr.into_iter() {
@@ -150,5 +153,5 @@ fn apply_op(car: BigDecimal, cdr: &Vec<Expr>, op: fn(&BigDecimal, &BigDecimal) -
         };
     }
 
-    Result::Ok(Expr::Atom(Atom::Number(total)));
+    return Result::Ok(Expr::Atom(Atom::Number(total)));
 }

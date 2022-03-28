@@ -1,6 +1,5 @@
 mod lex;
-mod math;
-mod scope;
+mod math_ops;
 mod syntax;
 mod boolean;
 mod built_in;
@@ -10,7 +9,6 @@ use std::io::Write;
 use std::collections::HashMap;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
-use crate::scope::Scope;
 use crate::syntax::LambdaDef;
 
 // Get string from actual config file.
@@ -22,7 +20,7 @@ fn main() {
     print!("Mini-Scheme Version {}\n\n", VERSION);
 
     // Holds all the predefined functions and values for REPL session.
-    let mut scope: Scope = HashMap::new();
+    // let mut scope: Scope = HashMap::new();
 
     loop {
         let mut input = String::new();
@@ -44,9 +42,9 @@ fn main() {
                     .unwrap();
 
                 if first_char != ';' {
-                    // Evaluate expression using scope.
-                    
-                    // Check for errors and convert to a string.
+                    // Convert to syntax tree.
+                    // Evaluate syntax tree using traversal.
+                    let output = String::from("THIS PROGRAM DOESNT DO ANYTHING");
                     
                     // Print out expression.
                     print!("{}\n", &output);

@@ -65,47 +65,6 @@ fn next_sibling(root: &Expr, path: &Vec<u32>) -> Option<Expr> {
     // Then return that expression and the new path.
 }
 
-fn get_child(root: &Expr, path: &Vec<u32>) -> Option<&Expr> {
-    let mut current = root;
-    let mut levels_traveled = 0;
-
-    // Get total number of steps required.
-    let step_count = path.len();
-
-    loop {
-        match current {
-            Expr::List(list) => {
-                let next_index = path.get(levels_traveled);
-                current = &list.get(next_index).unwrap();
-                
-                // increment levels traveled.
-                levels_traveled += 1;
-            }
-            _ => { break; }
-        }
-    }
-    
-    // If we walked the right number of steps.
-    if levels_traveled == step_count {
-        Some(current.to_owned());
-    }
-    // If the right number of steps through tree were not taken,
-    // just return nothing.
-    else {
-        None;
-    }
-}
-
-// Get node on top of current node path.
-fn get_parent(root: &Expr, path: &Vec<u32>) -> Option<Expr> {
-    let mut parent_path = path.to_owned();
-    parent_path.pop();
-
-    let result = get_child(root, parent_path);
-
-    return result;
-}
-
 // Maps function names to their real world operations.
 fn exec_fn(name: &String, args: &Vec<Expr>) -> Result<Expr, String> {
     match name {
