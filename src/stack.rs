@@ -7,4 +7,4 @@
 //      eval_list if it's a list of expressions.
 // * get_symbol: Attempts to simplify argument, then returns what it is mapped too
 //               if it simplifies to an atom.
-// * execute_lambda:
+// * execute_lambda: 
