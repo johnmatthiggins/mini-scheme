@@ -48,17 +48,3 @@ pub enum Expr {
     List(Vec<Expr>),
     Atom(Atom)
 }
-
-impl ToString for Atom {
-    fn to_string(&self) -> String {
-        match self {
-            Atom::Boolean(b) => b.to_string(),
-            Atom::StringLiteral(s) => s,
-            Atom::Number(n) => n.to_string(),
-            Atom::Symbol(s) => s,
-            // TODO: Actually implement this.
-            Atom::LambdaDef(l) => "ERROR".to_string(),
-            Atom::Nil => NIL_LIT.to_string()
-        }
-    }
-}
