@@ -15,7 +15,7 @@ pub fn lexical_analysis(code: &String) -> Result<Vec<String>, String> {
     let is_matching = parens_match_and_exist(code);
 
     match is_matching {
-        true => Result::Ok(split_with_parens(code)),
+        true => Result::Ok(tokenize(code)),
         false => Result::Err("Missing closing or opening parenthesis.".to_string())
     }
 }
@@ -158,21 +158,113 @@ fn is_string(atom: &String) -> bool {
  * Splits syntax into individual tokens.
  * (+ 1 (* 1 2)) => ['(', '+', '(', '*', '1', '2', ')', ')']
  */
-fn split_with_parens(code: &String) -> Vec<String> {
-    let s0 = code.replace(")", " ) ");
-    let s1 = s0.replace("(", " ( ");
-    let tokens = s1.split(' ');
+// fn split_with_parens(code: &String) -> Vec<String> {
+//     let s0 = code.replace(")", " ) ");
+//     let s1 = s0.replace("(", " ( ");
+//     let tokens = s1.split(' ');
 
-    let mut result: Vec<String> = tokens
-        .map(|x| x.trim().to_string())
-        .filter(|x| !x.trim().is_empty())
-        .collect();
+//     let mut result: Vec<String> = tokens
+//         .map(|x| x.trim().to_string())
+//         .filter(|x| !x.trim().is_empty())
+//         .collect();
     
-    // If it's a single token, surround it with parentheses.
-    if result.len() == 1 {
-        result.insert(0, "(".to_string());
-        result.push(")".to_string());
+//     // If it's a single token, surround it with parentheses.
+//     if result.len() == 1 {
+//         result.insert(0, "(".to_string());
+//         result.push(")".to_string());
+//     }
+
+//     return result;
+// }
+
+fn tokenize(source: &String) -> Vec<String> {
+    // keep count of open parenthesis
+    // track whether we are in a string
+    let mut in_quotes: bool = false;
+    let char_list: Vec<char> = source.chars().collect::<Vec<char>>();
+    let mut tokens: Vec<String> = Vec::new();
+    let mut position: usize = 0;
+    let mut current_str: String = String::new();
+
+    // loop until we break out.
+    loop {
+        // grab until there aren't any more.
+        let c = char_list.get(position);
+
+        if let Some(v) = c {
+            if v.is_whitespace() {
+                position += 1;
+                if !in_quotes {
+                    if !current_str.is_empty() {
+                        tokens.push(current_str.clone());
+                        current_str.clear();
+                    }
+                }
+                else {
+                    current_str.push(v.clone());
+                }
+            }
+            // We don't support double quotes, only single.
+            else if v == &'\'' {
+                position += 1;
+
+                if in_quotes {
+                    in_quotes = false;
+
+                    current_str.push(v.clone());
+                    tokens.push(current_str.clone());
+                    current_str.clear();
+                }
+                else {
+                    if !current_str.is_empty() {
+                        tokens.push(current_str.clone());
+                        current_str.clear();
+                    }
+                    
+                    in_quotes = true;
+                    current_str.push(v.clone());
+                }
+            }
+            else if v == &'(' {
+                position += 1;
+
+                if !in_quotes {
+                    if !current_str.is_empty() {
+                        tokens.push(current_str.clone());
+                        current_str.clear();
+                    }
+
+                    tokens.push(String::from("("));
+                }
+            }
+            else if v == &')' {
+                position += 1;
+
+                if !in_quotes {
+                    if !current_str.is_empty() {
+                        tokens.push(current_str.clone());
+                        current_str.clear();
+                    }
+
+                    tokens.push(String::from(")"));
+                }
+                else {
+                    current_str.push(v.clone());
+                }
+            }
+            else {
+                position += 1;
+                current_str.push(v.clone());
+            }
+        }
+        else {
+            if !current_str.is_empty() {
+                tokens.push(current_str.clone());
+                current_str.clear();
+            }
+            break;
+        }
     }
 
-    return result;
+    tokens
 }
