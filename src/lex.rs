@@ -2,8 +2,8 @@ use std::vec::Vec;
 use std::result::Result;
 use std::str::FromStr;
 use bigdecimal::BigDecimal;
-use crate::syntax::Expr;
-use crate::syntax::Atom;
+use crate::syntax;
+use crate::syntax::*;
 
 /**
  * Returns all tokens in code separated into a list of strings.
@@ -28,19 +28,19 @@ pub fn lexical_analysis(code: &String) -> Result<Vec<String>, String> {
  */
 fn parse_atom(atom: &String) -> Expr {
     if is_string(atom) {
-        return Expr::Atom(Atom::StringLiteral(atom.to_owned()));
+        Expr::Atom(Atom::StringLiteral(atom.to_owned()))
     }
     else if BigDecimal::from_str(&atom).is_ok() {
-        return Expr::Atom(Atom::Number(BigDecimal::from_str(&atom).unwrap()));
+        Expr::Atom(Atom::Number(BigDecimal::from_str(&atom).unwrap()))
     }
     else if is_boolean(atom) {
-        return Expr::Atom(Atom::Boolean(atom == "#t"));
+        Expr::Atom(Atom::Boolean(atom == "#t"))
     }
-    else if atom == crate::syntax::NIL_LIT {
-        return Expr::Atom(Atom::Nil);
+    else if atom == syntax::NIL_LIT {
+        Expr::Atom(Atom::Nil)
     }
     else {
-        return Expr::Atom(Atom::Symbol(atom.to_owned()));
+        Expr::Atom(Atom::Symbol(atom.to_owned()))
     }
 }
 
@@ -118,15 +118,15 @@ pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
 fn is_boolean(atom: &String) -> bool {
     // Boolean literals are '#f' and '#t'
     // for true and false respectively.
-    let is_boolean = atom == crate::syntax::FALSE_LIT
-        ||  atom == crate::syntax::TRUE_LIT;
+    let is_boolean = atom == syntax::FALSE_LIT
+        ||  atom == syntax::TRUE_LIT;
 
     return is_boolean;
 }
 
 fn is_string(atom: &String) -> bool {
     const BACKSLASH_C: char = '\\'; 
-    const QUOTE_C: char = '"';
+    const QUOTE_C: char = '\'';
     let mut is_string: bool = true;
 
     for (i, c) in atom.chars().enumerate() {
@@ -236,6 +236,9 @@ fn tokenize(source: &String) -> Vec<String> {
 
                     tokens.push(String::from("("));
                 }
+                else {
+                    current_str.push(v.clone());
+                }
             }
             else if v == &')' {
                 position += 1;
@@ -264,6 +267,11 @@ fn tokenize(source: &String) -> Vec<String> {
             }
             break;
         }
+    }
+
+    if tokens.len() == 1 {
+        tokens.insert(0, "(".to_string());
+        tokens.push(")".to_string());
     }
 
     tokens
