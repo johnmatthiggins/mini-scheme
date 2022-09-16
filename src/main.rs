@@ -8,9 +8,7 @@ mod boolean;
 use std::collections::HashMap;
 use std::io::Write;
 use std::io;
-use crate::syntax::Expr;
-use crate::syntax::Atom;
-use crate::syntax::LambdaDef;
+use crate::syntax::*;
 use crate::env::EnvTrait;
 use crate::env::Env;
 
@@ -72,13 +70,13 @@ fn print_tree(expr_tree: &Expr) -> String {
 fn print_atom(expr_atom: &Atom) -> String {
     let result = match expr_atom {
         Atom::Boolean(b) => match b {
-            true => crate::syntax::TRUE_LIT.to_string(),
-            false => crate::syntax::FALSE_LIT.to_string()
+            true => syntax::TRUE_LIT.to_string(),
+            false => syntax::FALSE_LIT.to_string()
         },
         Atom::StringLiteral(s) => s.to_string(),
         Atom::Number(n) => n.to_string(),
         Atom::Symbol(s) => s.to_string(),
-        Atom::Nil => crate::syntax::NIL_LIT.to_string(),
+        Atom::Nil => syntax::NIL_LIT.to_string(),
         Atom::Lambda(ld) => print_lambda(ld)
     };
 
@@ -90,7 +88,7 @@ fn print_lambda(lambda: &LambdaDef) -> String {
     let mut acc = String::new();
     
     acc.push('(');
-    acc.push_str(crate::syntax::FUN_OP);
+    acc.push_str(syntax::FUN_OP);
     acc.push(' ');
     acc.push_str(&print_list(&lambda.params));
     acc.push(' ');
