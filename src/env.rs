@@ -5,6 +5,7 @@ use crate::boolean::LogicOps;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
 use crate::syntax::LambdaDef;
+use crate::syntax;
 use crate::math::MathOps;
 
 pub type Env = HashMap<String, Expr>;
@@ -25,7 +26,7 @@ impl EnvTrait for Env {
             .map(|x| lex::parse_tokens(&x))
             .and_then(|x| self.simplify(&x));
 
-        return ast;
+        ast
     }
 
     fn eval_list(&mut self, list: &Vec<Expr>) -> Result<Expr, String> {
@@ -65,27 +66,25 @@ impl EnvTrait for Env {
         let ERROR_MESSAGE = "Symbol cannot be used as function.";
 
         if !self.contains_key(func) {
-           let result = match func.as_str() {
-                crate::syntax::EQ_OP => self.eq(args),
-                crate::syntax::ADD_OP => self.add(args),
-                crate::syntax::SUB_OP => self.sub(args),
-                crate::syntax::MUL_OP => self.mul(args),
-                crate::syntax::DIV_OP => self.div(args),
-                crate::syntax::MOD_OP => self.modulo(args),
-                crate::syntax::CAR_OP => self.car(args),
-                crate::syntax::CDR_OP => self.cdr(args),
-                crate::syntax::QT_OP => self.quote(args),
-                crate::syntax::NOT_OP => self.not(args),
-                crate::syntax::AND_OP => self.and(args),
-                crate::syntax::OR_OP => self.or(args),
-                crate::syntax::ATM_OP => self.atom(args),
-                crate::syntax::IF_OP => self.if_op(args),
-                crate::syntax::DEF_OP => self.define(args),
-                crate::syntax::FUN_OP => self.lambda(args),
-                _ => Result::Err("Function name not recognized.".to_string())
-            };
-            
-            return result;
+           match func.as_str() {
+                syntax::EQ_OP => self.eq(args),
+                syntax::ADD_OP => self.add(args),
+                syntax::SUB_OP => self.sub(args),
+                syntax::MUL_OP => self.mul(args),
+                syntax::DIV_OP => self.div(args),
+                syntax::MOD_OP => self.modulo(args),
+                syntax::CAR_OP => self.car(args),
+                syntax::CDR_OP => self.cdr(args),
+                syntax::QT_OP => self.quote(args),
+                syntax::NOT_OP => self.not(args),
+                syntax::AND_OP => self.and(args),
+                syntax::OR_OP => self.or(args),
+                syntax::ATM_OP => self.atom(args),
+                syntax::IF_OP => self.if_op(args),
+                syntax::DEF_OP => self.define(args),
+                syntax::FUN_OP => self.lambda(args),
+                _ => Result::Err("Function name not recognized.".to_string()),
+            }
         }
         else {
             // Probably will have to remove this once we start implementing the LAMBDA.
@@ -106,12 +105,10 @@ impl EnvTrait for Env {
                     _ => Err(ERROR_MESSAGE.to_string())
                 });
 
-            let result = match maybe_lambda {
+            match maybe_lambda {
                 Ok(def) => self.to_owned().execute_lambda(&def, args),
                 Err(msg) => Err(msg)
-            };
-
-            return result;
+            }
         }
     }
 
@@ -144,7 +141,7 @@ impl EnvTrait for Env {
         let params = &lambda_def.params;
 
         if params.len() != args.len() {
-            return Err("Incorrect argument count for function call.".to_string());
+            Err("Incorrect argument count for function call.".to_string())
         }
         else {
             // Take both vectors of args and params and combine them
@@ -174,7 +171,7 @@ impl EnvTrait for Env {
                 }
             }
 
-            return local_env.simplify(&body);
+            local_env.simplify(&body)
         }
     }
 }
