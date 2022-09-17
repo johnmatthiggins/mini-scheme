@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use crate::lex;
 use crate::built_in::EnvPrimitives;
+use crate::sys::EnvSys;
 use crate::boolean::LogicOps;
 use crate::syntax::Expr;
 use crate::syntax::Atom;
@@ -82,6 +83,10 @@ impl EnvTrait for Env {
                 syntax::ATM_OP => self.atom(args),
                 syntax::IF_OP => self.if_op(args),
                 syntax::DEF_OP => self.define(args),
+                syntax::SLURP_FN => self.slurp(args),
+                syntax::WRITE_FILE_FN => self.write(args),
+                syntax::PRINT_FN => self.print(args),
+                syntax::PRINTLN_FN => self.println(args),
                 syntax::FUN_OP => self.lambda(args),
                 _ => Result::Err("Function name not recognized.".to_string()),
             }

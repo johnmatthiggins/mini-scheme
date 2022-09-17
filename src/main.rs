@@ -4,11 +4,12 @@ mod env;
 mod built_in;
 mod math;
 mod boolean;
+mod sys;
 
 use std::collections::HashMap;
 use std::io::Write;
 use std::io;
-use ansi_term::Colour::{Red, Green, Blue, Cyan, Yellow};
+use ansi_term::Colour::{Red, Green, Blue, Purple, Yellow};
 use crate::syntax::*;
 use crate::env::EnvTrait;
 use crate::env::Env;
@@ -33,6 +34,7 @@ fn main() {
         else {
             print!("{}", Red.paint(PROMPT).to_string());
         }
+
         io::stdout().flush().unwrap();
 
         io::stdin()
@@ -85,7 +87,7 @@ fn print_atom(expr_atom: &Atom) -> String {
             false => Red.paint(syntax::FALSE_LIT).to_string(),
         },
         Atom::StringLiteral(s) => Yellow.paint(s.to_string()).to_string(),
-        Atom::Number(n) => Cyan.paint(n.to_string()).to_string(),
+        Atom::Number(n) => Red.paint(n.to_string()).to_string(),
         Atom::Symbol(s) => s.to_string(),
         Atom::Nil => Red.paint(syntax::NIL_LIT.to_string()).to_string(),
         Atom::Lambda(ld) => print_lambda(ld)

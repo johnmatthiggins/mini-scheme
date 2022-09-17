@@ -27,6 +27,12 @@ pub const FALSE_LIT: &str = "#f";
 pub const TRUE_LIT: &str = "#t";
 pub const NIL_LIT: &str = "nil";
 
+// IO functions
+pub const SLURP_FN: &str = "slurp";
+pub const WRITE_FILE_FN: &str = "write";
+pub const PRINT_FN: &str = "print";
+pub const PRINTLN_FN: &str = "println";
+
 #[derive(Clone, PartialEq, Eq)]
 pub struct LambdaDef {
     pub params: Vec<Expr>,
