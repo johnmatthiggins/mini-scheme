@@ -151,7 +151,7 @@ fn is_string(atom: &String) -> bool {
         }
     }
 
-    return is_string;
+    is_string
 }
 
 /**
@@ -206,16 +206,22 @@ fn tokenize(source: &String) -> Vec<String> {
             }
             // We don't support double quotes, only single.
             else if v == &'\'' {
-                position += 1;
-
                 if in_quotes {
-                    in_quotes = false;
+                    if char_list.get(position - 1).unwrap() == &'\\' {
+                        current_str.push('\'');
+                    }
+                    else {
+                        in_quotes = false;
 
-                    current_str.push(v.clone());
-                    tokens.push(current_str.clone());
-                    current_str.clear();
+                        current_str.push(v.clone());
+                        tokens.push(current_str.clone());
+                        current_str.clear();
+                    }
+
+                    position += 1;
                 }
                 else {
+                    position += 1;
                     if !current_str.is_empty() {
                         tokens.push(current_str.clone());
                         current_str.clear();

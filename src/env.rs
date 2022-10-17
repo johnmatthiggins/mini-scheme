@@ -8,7 +8,9 @@ use crate::syntax::LambdaDef;
 use crate::syntax;
 use crate::math::MathOps;
 
-pub type Env = HashMap<String, Expr>;
+pub struct Env {
+    pub scopes: Vec<HashMap<String, Expr>>;
+}
 
 pub trait EnvTrait {
     fn eval(&mut self, input: &String) -> Result<Expr, String>;
@@ -18,12 +20,19 @@ pub trait EnvTrait {
     fn simplify(&mut self, expr: &Expr) -> Result<Expr, String>;
     fn get_symbol(&mut self, s: &String) -> Result<Expr, String>;
     fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn is_in_scope(&mut self);
+    fn begin_scope(&mut self);
+    fn end_scope(&mut self);
 }
 
 impl EnvTrait for Env {
     fn eval(&mut self, input: &String) -> Result<Expr, String> {
         let ast = lex::lexical_analysis(input)
-            .map(|x| lex::parse_tokens(&x))
+            .map(|x| {
+                let tree = lex::parse_tokens(&x);
+                dbg!(&tree);
+                tree
+            })
             .and_then(|x| self.simplify(&x));
 
         ast
@@ -106,8 +115,11 @@ impl EnvTrait for Env {
                 });
 
             match maybe_lambda {
-                Ok(def) => self.to_owned().execute_lambda(&def, args),
-                Err(msg) => Err(msg)
+                Ok(def) => {
+                    self.scopes.push(HashMap::new());
+                    self.execute_lambda(&def, args)
+                },
+                Err(msg) => Err(msg),
             }
         }
     }
@@ -124,18 +136,26 @@ impl EnvTrait for Env {
     }
 
     fn get_symbol(&mut self, s: &String) -> Result<Expr, String> {
-        let result = self.to_owned().get(s)
-            .map(|x| self.simplify(&x))
-            .unwrap_or(Err(format!("Symbol of name '{}' is undefined.", s).to_string()));
+        let mut i = 0;
+        let mut result = Err(format!("Symbol of name '{}' is undefined.", s));
+        let mut found = false;
+
+        while i < self.scopes.len() && !found {
+            let scope = self.scopes.get(i).unwrap();
+
+            if scope.contains_key(s) {
+                result = scope.get(s)
+                    .map(|x| self.simplify(&x))
+                    .unwrap_or(Err("ERROR!"));
+                found = true;
+            }
+        }
         
-        return result;
+        result
     }
 
     fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>)
         -> Result<Expr, String> {
-        
-        // Create local session for evaluating a function.
-        let mut local_env = self.clone();
         
         let body = &*lambda_def.body;
         let params = &lambda_def.params;
@@ -144,6 +164,9 @@ impl EnvTrait for Env {
             Err("Incorrect argument count for function call.".to_string())
         }
         else {
+            // Create another scope for evaluating a function.
+            self.begin_scope();
+
             // Take both vectors of args and params and combine them
             // in an ordered fashion.
             // Then after that insert each one into the local environment.
@@ -163,7 +186,12 @@ impl EnvTrait for Env {
                 
                 match name {
                     Ok(v) => {
-                        local_env.insert(v.to_owned(), arg.to_owned());
+                        self.scopes
+                            .last()
+                            .unwrap()
+                            .insert(
+                                v.to_owned(),
+                                arg.to_owned());
                     },
                     Err(msg) => {
                         return Err(msg);
@@ -171,7 +199,24 @@ impl EnvTrait for Env {
                 }
             }
 
-            local_env.simplify(&body)
+            let expr = self.simplify(&body);
+            // remove the scope we just created.
+            self.end_scope();
+
+            expr
         }
+    }
+
+    fn is_in_scope(&mut self, s: &String) -> bool {
+        let symbol = self.get_symbol(s);
+        matches!(symbol, Ok(_))
+    }
+
+    fn begin_scope(&mut self) {
+        self.scopes.push(HashMap::new());
+    }
+
+    fn end_scope(&mut self) {
+        self.scopes.pop();
     }
 }

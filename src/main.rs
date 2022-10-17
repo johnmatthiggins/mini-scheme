@@ -20,7 +20,11 @@ fn main() {
     print!("Mini-Scheme Version {}\n", VERSION);
 
     // Holds all the predefined functions and values for REPL session.
-    let mut env: Env = HashMap::new();
+    let mut env: Env = Env {
+        scopes: Vec::new(),
+    };
+
+    env.begin_scope();
     let mut failed = false;
 
     loop {
@@ -58,7 +62,7 @@ fn main() {
                         Err(msg) => 
                         {
                             failed = true;
-                            println!("{}", &msg);
+                            println!("{}", Red.paint(&msg).to_string());
                         },
                     };
                 }
@@ -84,7 +88,8 @@ fn print_atom(expr_atom: &Atom) -> String {
             true => Red.paint(syntax::TRUE_LIT).to_string(),
             false => Red.paint(syntax::FALSE_LIT).to_string(),
         },
-        Atom::StringLiteral(s) => Yellow.paint(s.to_string()).to_string(),
+        Atom::StringLiteral(s) =>
+            Yellow.paint(s.to_string().replace("\\'", "'")).to_string(),
         Atom::Number(n) => Cyan.paint(n.to_string()).to_string(),
         Atom::Symbol(s) => s.to_string(),
         Atom::Nil => Red.paint(syntax::NIL_LIT.to_string()).to_string(),

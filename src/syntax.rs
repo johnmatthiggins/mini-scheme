@@ -27,13 +27,13 @@ pub const FALSE_LIT: &str = "#f";
 pub const TRUE_LIT: &str = "#t";
 pub const NIL_LIT: &str = "nil";
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LambdaDef {
     pub params: Vec<Expr>,
     pub body: Box<Expr>
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Atom {
    Boolean(bool),
    StringLiteral(String),
@@ -43,7 +43,7 @@ pub enum Atom {
    Nil
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
     List(Vec<Expr>),
     Atom(Atom)
