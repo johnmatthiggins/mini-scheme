@@ -9,7 +9,7 @@ use crate::syntax;
 use crate::math::MathOps;
 
 pub struct Env {
-    pub scopes: Vec<HashMap<String, Expr>>;
+    pub scopes: Vec<HashMap<String, Expr>>,
 }
 
 pub trait EnvTrait {
@@ -20,9 +20,10 @@ pub trait EnvTrait {
     fn simplify(&mut self, expr: &Expr) -> Result<Expr, String>;
     fn get_symbol(&mut self, s: &String) -> Result<Expr, String>;
     fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>) -> Result<Expr, String>;
-    fn is_in_scope(&mut self);
+    fn is_in_scope(&mut self, var_name: &String) -> bool;
     fn begin_scope(&mut self);
     fn end_scope(&mut self);
+    fn add_var(&mut self, var_name: String, value: Expr);
 }
 
 impl EnvTrait for Env {
@@ -42,7 +43,7 @@ impl EnvTrait for Env {
         let car = list
             .first()
             .map(|x| match x {
-                Expr::List(_) => self.simplify(x),
+                Expr::List(_) => self.simplify(&x),
                 Expr::Atom(_) => Ok(x.to_owned())
             })
             .and_then(|x| match x {
@@ -74,7 +75,7 @@ impl EnvTrait for Env {
         #[allow(non_snake_case)]
         let ERROR_MESSAGE = "Symbol cannot be used as function.";
 
-        if !self.contains_key(func) {
+        if !self.is_in_scope(func) {
            match func.as_str() {
                 syntax::EQ_OP => self.eq(args),
                 syntax::ADD_OP => self.add(args),
@@ -100,10 +101,10 @@ impl EnvTrait for Env {
             // return Result::Err("Value cannot be used as function.".to_string());
             
             // Grab possibly lambda function from local environment.
-            let copy_env = self.clone();
-            let maybe_lambda = copy_env
-                .get(func)
-                .map(|x| self.simplify(x))
+            self.begin_scope();
+            let maybe_lambda = self
+                .get_symbol(func)
+                .map(|x| self.simplify(&x))
                 .unwrap_or(Err(ERROR_MESSAGE.to_string()))
                 .and_then(|x| match x {
                     Expr::Atom(v) => Ok(v),
@@ -114,13 +115,16 @@ impl EnvTrait for Env {
                     _ => Err(ERROR_MESSAGE.to_string())
                 });
 
-            match maybe_lambda {
+            let result = match maybe_lambda {
                 Ok(def) => {
                     self.scopes.push(HashMap::new());
                     self.execute_lambda(&def, args)
                 },
                 Err(msg) => Err(msg),
-            }
+            };
+            self.end_scope();
+
+            result
         }
     }
 
@@ -141,14 +145,15 @@ impl EnvTrait for Env {
         let mut found = false;
 
         while i < self.scopes.len() && !found {
-            let scope = self.scopes.get(i).unwrap();
+            let scope = self.scopes.get_mut(i).unwrap();
 
             if scope.contains_key(s) {
                 result = scope.get(s)
                     .map(|x| self.simplify(&x))
-                    .unwrap_or(Err("ERROR!"));
+                    .unwrap_or(Err("ERROR!".to_string()));
                 found = true;
             }
+            i += 1;
         }
         
         result
@@ -187,7 +192,7 @@ impl EnvTrait for Env {
                 match name {
                     Ok(v) => {
                         self.scopes
-                            .last()
+                            .last_mut()
                             .unwrap()
                             .insert(
                                 v.to_owned(),
@@ -207,8 +212,8 @@ impl EnvTrait for Env {
         }
     }
 
-    fn is_in_scope(&mut self, s: &String) -> bool {
-        let symbol = self.get_symbol(s);
+    fn is_in_scope(&mut self, var_name: &String) -> bool {
+        let symbol = self.get_symbol(var_name);
         matches!(symbol, Ok(_))
     }
 
@@ -218,5 +223,12 @@ impl EnvTrait for Env {
 
     fn end_scope(&mut self) {
         self.scopes.pop();
+    }
+
+    fn add_var(&mut self, var_name: String, value: Expr) {
+        self.scopes
+            .last_mut()
+            .unwrap()
+            .insert(var_name, value);
     }
 }

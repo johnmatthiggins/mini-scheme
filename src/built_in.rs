@@ -24,7 +24,7 @@ impl EnvPrimitives for Env {
             let symbol = try_get_symbol_string(current_expr);
 
             let result = symbol.map(|x| {
-                self.insert(x.to_owned(), symbol_def.to_owned());
+                self.add_var(x.to_owned(), symbol_def.to_owned());
 
                 return Expr::Atom(Atom::Symbol(x));
             });

@@ -95,7 +95,7 @@ impl MathOps for Env {
             default: BigDecimal::from(0)
         };
 
-        return apply_neg_op(&self, args, &op_info);
+        apply_neg_op(self, args, &op_info)
     }
 
     fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
@@ -139,7 +139,7 @@ impl MathOps for Env {
             default: BigDecimal::from(1)
         };
 
-        return apply_neg_op(&self, args, &op_info);
+        apply_neg_op(self, args, &op_info)
     }
 
     fn modulo(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
@@ -161,12 +161,12 @@ impl MathOps for Env {
     }
 }
 
-fn apply_neg_op(env: &Env, args: &Vec<Expr>, info: &OpInfo) -> Result<Expr, String> {
-    let mut local_env = env.to_owned();
+fn apply_neg_op(env: &mut Env, args: &Vec<Expr>, info: &OpInfo) -> Result<Expr, String> {
+    env.begin_scope();
     let total = args.first()
         .ok_or(format!("Incorrect argument count for '{}' operator.", info.name)
                .to_string())
-        .and_then(|x| local_env.simplify(x))
+        .and_then(|x| env.simplify(x))
         .and_then(|x| match x {
             Expr::Atom(atom) => match atom {
                 Atom::Number(n) => Ok(n.to_owned()),
@@ -180,9 +180,14 @@ fn apply_neg_op(env: &Env, args: &Vec<Expr>, info: &OpInfo) -> Result<Expr, Stri
 
     if args.len() > 1 {
         let result = total
-            .and_then(|n| apply_first_rest(&local_env, n, &args[1..].to_vec(), info.op_fn, &info.name));
+            .and_then(|n| apply_first_rest(
+                    env,
+                    n, &args[1..].to_vec(),
+                    info.op_fn,
+                    &info.name));
 
-        return result;
+
+        result
     }
     else {
         let result = total
@@ -192,18 +197,18 @@ fn apply_neg_op(env: &Env, args: &Vec<Expr>, info: &OpInfo) -> Result<Expr, Stri
                 Err(format!("Cannot perform '{}' operator on non-numeric type.", info.name)
                     .to_string()));
 
-        return result;
+        result
     }
 }
 
-fn apply_first_rest(env: &Env, car: BigDecimal, cdr: &Vec<Expr>,
+fn apply_first_rest(env: &mut Env, car: BigDecimal, cdr: &Vec<Expr>,
                     op: fn(&BigDecimal, &BigDecimal) -> BigDecimal,
                     op_name: &str) -> Result<Expr, String> {
     let mut total = car;
-    let mut local_env = env.clone();
+    env.begin_scope();
 
     for expr in cdr.into_iter() {
-        let simple_tree = local_env.simplify(expr);
+        let simple_tree = env.simplify(expr);
 
         match simple_tree {
             Ok(tree) => {
@@ -231,5 +236,7 @@ fn apply_first_rest(env: &Env, car: BigDecimal, cdr: &Vec<Expr>,
         };
     }
 
-    return Result::Ok(Expr::Atom(Atom::Number(total)));
+    env.end_scope();
+
+    Result::Ok(Expr::Atom(Atom::Number(total)))
 }

@@ -5,7 +5,6 @@ mod built_in;
 mod math;
 mod boolean;
 
-use std::collections::HashMap;
 use std::io::Write;
 use std::io;
 use ansi_term::Colour::{Red, Green, Blue, Cyan, Yellow};
