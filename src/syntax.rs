@@ -33,13 +33,13 @@ pub const WRITE_FILE_FN: &str = "write";
 pub const PRINT_FN: &str = "print";
 pub const PRINTLN_FN: &str = "println";
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LambdaDef {
     pub params: Vec<Expr>,
     pub body: Box<Expr>,
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Atom {
     Boolean(bool),
     StringLiteral(String),
@@ -49,7 +49,7 @@ pub enum Atom {
     Nil,
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
     List(Vec<Expr>),
     Atom(Atom),

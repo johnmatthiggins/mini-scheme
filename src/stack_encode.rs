@@ -1,6 +1,7 @@
 use crate::syntax::Expr;
 use std::collections::VecDeque;
 
+#[derive(Debug)]
 pub enum StackInstruction {
     Exec(Expr),
 
@@ -11,7 +12,7 @@ pub enum StackInstruction {
     Push(Expr),
 }
 
-fn encode_ast(ast: &Expr) -> VecDeque<StackInstruction> {
+pub fn encode_ast(ast: &Expr) -> VecDeque<StackInstruction> {
     match ast {
         Expr::List(expressions) => {
             let mut next_instructions = VecDeque::new();
@@ -37,7 +38,7 @@ fn encode_ast(ast: &Expr) -> VecDeque<StackInstruction> {
                         list_count += 1;
                     },
                     Expr::Atom(_) => {
-                        next_instructions.push_front(StackInstruction::Push(ast.to_owned()));
+                        next_instructions.push_front(StackInstruction::Push(next_expr.to_owned()));
                     },
                 }
             }

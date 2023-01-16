@@ -61,7 +61,9 @@ fn main() {
                         // let result = env.eval(&input);
                         let ast = lex::lexical_analysis(&input)
                             .map(|x| lex::parse_tokens(&x))
-                            .and_then(|x| self.simplify(&x));
+                            .map(|x| stack_encode::encode_ast(&x));
+
+                        dbg!(ast);
 
                         // match result {
                         //     Ok(expr) => {
