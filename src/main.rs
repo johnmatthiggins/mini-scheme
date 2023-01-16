@@ -41,28 +41,36 @@ fn main() {
             .ok()
             .expect("User input could not be read...");
 
+        input = trim_newline(&mut input);
+
         if input.len() > 0 {
-            if input != "\n" {
-                let first_char = input.chars().next().unwrap();
+            match input.as_str() {
+                "exit" => {
+                    print!("\n");
+                    break;
+                },
+                "" => {
+                    print!("\n");
+                },
+                _ => {
+                    let first_char = input.chars().next().unwrap();
 
-                if first_char != ';' {
-                    let result = env.eval(&input);
+                    if first_char != ';' {
+                        let result = env.eval(&input);
 
-                    match result {
-                        Ok(expr) => {
-                            failed = false;
-                            println!("{}", print_tree(&expr));
-                        }
-                        Err(msg) => {
-                            failed = true;
-                            println!("{}", &msg);
-                        }
-                    };
+                        match result {
+                            Ok(expr) => {
+                                failed = false;
+                                println!("{}", print_tree(&expr));
+                            }
+                            Err(msg) => {
+                                failed = true;
+                                println!("{}", &msg);
+                            }
+                        };
+                    }
                 }
             }
-        } else {
-            print!("\n");
-            break;
         }
     }
 }
@@ -124,4 +132,17 @@ fn print_list(expr_list: &Vec<Expr>) -> String {
     }
 
     acc
+}
+
+fn trim_newline(s: &mut String) -> String {
+    let mut trimmed = s.clone();
+
+    if trimmed.ends_with('\n') {
+        trimmed.pop();
+        if trimmed.ends_with('\r') {
+            trimmed.pop();
+        }
+    }
+
+    trimmed
 }

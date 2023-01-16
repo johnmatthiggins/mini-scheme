@@ -69,7 +69,7 @@ impl EnvSys for Env {
                 Ok(v) => match v {
                     Expr::Atom(a) => match a {
                         Atom::StringLiteral(s) => {
-                            print!("{}", s);
+                            print!("{}\n", s);
                             Ok(Expr::Atom(Atom::Nil))
                         }
                         _ => Err(String::from("The argument of 'slurp' must be a string!")),
