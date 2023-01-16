@@ -1,5 +1,5 @@
 mod stack_encode;
-// mod stack;
+mod stack;
 mod boolean;
 mod built_in;
 mod env;
@@ -13,6 +13,7 @@ use crate::env::Eval;
 use crate::syntax::*;
 use ansi_term::Colour::{Blue, Green, Purple, Red, Yellow};
 use std::collections::HashMap;
+use std::collections::VecDeque;
 use std::io;
 use std::io::Write;
 
@@ -24,6 +25,7 @@ fn main() {
 
     // Holds all the predefined functions and values for REPL session.
     let mut env: Env = HashMap::new();
+    let mut sm = stack::StackMachine::create(env);
     let mut failed = false;
 
     loop {
@@ -59,11 +61,14 @@ fn main() {
 
                     if first_char != ';' {
                         // let result = env.eval(&input);
-                        let ast = lex::lexical_analysis(&input)
+                        let instructions = lex::lexical_analysis(&input)
                             .map(|x| lex::parse_tokens(&x))
-                            .map(|x| stack_encode::encode_ast(&x));
+                            .map(|x| stack_encode::encode_ast(&x))
+                            .unwrap();
 
-                        dbg!(ast);
+                        let result = sm.run_instructions(instructions);
+
+                        println!("{}", print_tree(&result));
 
                         // match result {
                         //     Ok(expr) => {

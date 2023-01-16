@@ -38,7 +38,7 @@ pub fn encode_ast(ast: &Expr) -> VecDeque<StackInstruction> {
                         list_count += 1;
                     },
                     Expr::Atom(_) => {
-                        next_instructions.push_front(StackInstruction::Push(next_expr.to_owned()));
+                        next_instructions.push_back(StackInstruction::Push(next_expr.to_owned()));
                     },
                 }
             }
