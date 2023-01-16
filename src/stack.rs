@@ -1,21 +1,9 @@
 use crate::env::Env;
 use crate::env::Eval;
+use crate::syntax::Expr;
+use crate::stack_encode::StackInstruction;
 use std::collections::VecDeque;
 use std::vec::Vec;
-
-pub struct InstrLine {
-    args: Vec<Expr>,
-}
-
-pub enum StackInstruction {
-    Exec(Expr),
-
-    // this stack machine instruction pushes an empty
-    // arg list to the stack without popping the current args.
-    Wait,
-
-    Push(Expr),
-}
 
 pub struct StackMachine {
     arg_stack: VecDeque<Vec<Expr>>,
@@ -30,11 +18,11 @@ pub impl StackMachine {
 
         if let Some(line) = next {
             match line {
-                StackInstruction::Instruction(instr) => {
-                    let args = arg_stack.pop_front();
+                StackInstruction::Exec(instr) => {
+                    let mut args = arg_stack.pop_front();
                     
-                    if let Some(arg_list) = args {
-                        line.append(args_list);
+                    if let mut Some(arg_list) = args {
+                        args_list.push_front(line);
                         let result = environment.eval_list(arg_list);
 
                         if let Ok(v) = result {
@@ -86,7 +74,7 @@ pub impl StackMachine {
 
     fn wait_instr(&mut self) {
         let empty_vec = Vec::new();
-        self.arg_stack.push(empty_vec);
+        self.arg_stack.push_front(empty_vec);
     }
 
     fn push_instr(&mut self, expr: Expr) {

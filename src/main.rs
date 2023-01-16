@@ -1,3 +1,5 @@
+mod stack_encode;
+// mod stack;
 mod boolean;
 mod built_in;
 mod env;
@@ -56,18 +58,21 @@ fn main() {
                     let first_char = input.chars().next().unwrap();
 
                     if first_char != ';' {
-                        let result = env.eval(&input);
+                        // let result = env.eval(&input);
+                        let ast = lex::lexical_analysis(&input)
+                            .map(|x| lex::parse_tokens(&x))
+                            .and_then(|x| self.simplify(&x));
 
-                        match result {
-                            Ok(expr) => {
-                                failed = false;
-                                println!("{}", print_tree(&expr));
-                            }
-                            Err(msg) => {
-                                failed = true;
-                                println!("{}", &msg);
-                            }
-                        };
+                        // match result {
+                        //     Ok(expr) => {
+                        //         failed = false;
+                        //         println!("{}", print_tree(&expr));
+                        //     }
+                        //     Err(msg) => {
+                        //         failed = true;
+                        //         println!("{}", &msg);
+                        //     }
+                        // };
                     }
                 }
             }
