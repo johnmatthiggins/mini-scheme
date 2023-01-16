@@ -39,6 +39,10 @@ impl StackMachine {
                     self.exec_instr(cmd);
                     0
                 },
+                StackInstruction::RawExec(cmds) => {
+                    self.raw_exec_instr(cmds);
+                    0
+                },
                 StackInstruction::Push(expr) => {
                     self.push_instr(expr);
                     0
@@ -83,6 +87,28 @@ impl StackMachine {
         } else {
             let args = vec![expr];
             let result = self.environment.eval_list(&args).unwrap();
+
+            self.push_return(result);
+        }
+    }
+
+    fn raw_exec_instr(&mut self, expr: Vec<Expr>) {
+        let mut next_args = self.arg_stack.pop_front();
+
+        if let Some(mut args) = next_args {
+            let mut prepended = VecDeque::from(expr);
+
+            prepended.append(&mut args);
+
+            args = prepended;
+
+            let result = self
+                .environment
+                .eval_list(&Vec::from(args)).unwrap();
+
+            self.push_return(result);
+        } else {
+            let result = self.environment.eval_list(&expr).unwrap();
 
             self.push_return(result);
         }
