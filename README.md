@@ -1,5 +1,7 @@
 # Mini Lisp Interpreter
 
+<img src="lisp-logo.png">
+
 ## Intro
 
 This repo contains a mini version of a SCHEME interpreter.
