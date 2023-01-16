@@ -1,11 +1,15 @@
-# Mini Lisp Repl
+# Mini Lisp Interpreter
 
 ## Intro
 
+This repo contains a mini version of a SCHEME interpreter.
+SCHEME is an implementation of LISP that focuses on minimalism and avoids a lot of the cruft that is present in Common LISP. 
+However, while being similar to MIT SCHEME, this interpreter only implements a fraction of the specification. You can see the supported operations under the goal section of the document.
+
 ## Goals
 
-To implement a minimal Lisp Read-Eval-Print-Loop. There are only a few
-keywords used in this implementation.
+Our primary goal is to implement a minimal Lisp Read-Eval-Print-Loop.
+Because we are focusing on a minimal implementation there are only a few keywords used in this implementation.
 
 * lambda
 * quote
