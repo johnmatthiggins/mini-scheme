@@ -1,9 +1,9 @@
-use std::vec::Vec;
+use crate::env::*;
+use crate::syntax::*;
 use std::fs;
 use std::fs::File;
 use std::io::Read;
-use crate::env::*;
-use crate::syntax::*;
+use std::vec::Vec;
 
 pub trait EnvSys {
     fn slurp(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
@@ -16,33 +16,28 @@ impl EnvSys for Env {
     fn slurp(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
         if expr.len() != 1 {
             Err("Incorrect argument count for 'slurp' function.".to_string())
-        }
-        else {
+        } else {
             let arg1 = self.simplify(&expr[0]);
 
             match arg1 {
-                Ok(v) =>
-                    match v {
-                        Expr::Atom(a) =>
-                            match a {
-                                Atom::StringLiteral(s) => {
-                                    let trimmed: &str = &s.as_str()[1..s.len() - 1];
-                                    let mut f = File::open(trimmed);
-                                    let mut buf = String::new();
+                Ok(v) => match v {
+                    Expr::Atom(a) => match a {
+                        Atom::StringLiteral(s) => {
+                            let trimmed: &str = &s.as_str()[1..s.len() - 1];
+                            let mut f = File::open(trimmed);
+                            let mut buf = String::new();
 
-                                    let result = f.and_then(|mut x| x.read_to_string(&mut buf));
-                                    if let Ok(_) = result {
-                                        Ok(Expr::Atom(Atom::StringLiteral(buf)))
-                                    }
-                                    else {
-                                        Err(String::from("'slurp' could not read file..."))
-                                    }
-                                },
-                                _ => Err(
-                                    String::from("The argument of 'slurp' must be a string!")),
+                            let result = f.and_then(|mut x| x.read_to_string(&mut buf));
+                            if let Ok(_) = result {
+                                Ok(Expr::Atom(Atom::StringLiteral(buf)))
+                            } else {
+                                Err(String::from("'slurp' could not read file..."))
                             }
-                        _ => Err(String::from("Argument of 'slurp' must be file path!")),
+                        }
+                        _ => Err(String::from("The argument of 'slurp' must be a string!")),
                     },
+                    _ => Err(String::from("Argument of 'slurp' must be file path!")),
+                },
                 Err(msg) => Err(msg),
             }
         }
@@ -67,24 +62,20 @@ impl EnvSys for Env {
     fn print(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
         if expr.len() != 1 {
             Err("Incorrect argument count for 'slurp' function.".to_string())
-        }
-        else {
+        } else {
             let arg1 = self.simplify(&expr[0]);
 
             match arg1 {
-                Ok(v) =>
-                    match v {
-                        Expr::Atom(a) =>
-                            match a {
-                                Atom::StringLiteral(s) => {
-                                    print!("{}", s);
-                                    Ok(Expr::Atom(Atom::Nil))
-                                },
-                                _ => Err(
-                                    String::from("The argument of 'slurp' must be a string!")),
-                            }
-                        _ => Err(String::from("Argument of 'slurp' must be file path!")),
+                Ok(v) => match v {
+                    Expr::Atom(a) => match a {
+                        Atom::StringLiteral(s) => {
+                            print!("{}", s);
+                            Ok(Expr::Atom(Atom::Nil))
+                        }
+                        _ => Err(String::from("The argument of 'slurp' must be a string!")),
                     },
+                    _ => Err(String::from("Argument of 'slurp' must be file path!")),
+                },
                 Err(msg) => Err(msg),
             }
         }
@@ -93,24 +84,20 @@ impl EnvSys for Env {
     fn println(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
         if expr.len() != 1 {
             Err("Incorrect argument count for 'slurp' function.".to_string())
-        }
-        else {
+        } else {
             let arg1 = self.simplify(&expr[0]);
 
             match arg1 {
-                Ok(v) =>
-                    match v {
-                        Expr::Atom(a) =>
-                            match a {
-                                Atom::StringLiteral(s) => {
-                                    print!("{}\n", s);
-                                    Ok(Expr::Atom(Atom::Nil))
-                                },
-                                _ => Err(
-                                    String::from("The argument of 'slurp' must be a string!")),
-                            }
-                        _ => Err(String::from("Argument of 'slurp' must be file path!")),
+                Ok(v) => match v {
+                    Expr::Atom(a) => match a {
+                        Atom::StringLiteral(s) => {
+                            print!("{}\n", s);
+                            Ok(Expr::Atom(Atom::Nil))
+                        }
+                        _ => Err(String::from("The argument of 'slurp' must be a string!")),
                     },
+                    _ => Err(String::from("Argument of 'slurp' must be file path!")),
+                },
                 Err(msg) => Err(msg),
             }
         }

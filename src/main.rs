@@ -1,18 +1,18 @@
-mod lex;
-mod syntax;
-mod env;
-mod built_in;
-mod math;
 mod boolean;
+mod built_in;
+mod env;
+mod lex;
+mod math;
+mod syntax;
 mod sys;
 
-use std::collections::HashMap;
-use std::io::Write;
-use std::io;
-use ansi_term::Colour::{Red, Green, Blue, Purple, Yellow};
-use crate::syntax::*;
-use crate::env::EnvTrait;
 use crate::env::Env;
+use crate::env::Eval;
+use crate::syntax::*;
+use ansi_term::Colour::{Blue, Green, Purple, Red, Yellow};
+use std::collections::HashMap;
+use std::io;
+use std::io::Write;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PROMPT: &str = "~> ";
@@ -26,12 +26,11 @@ fn main() {
 
     loop {
         let mut input = String::new();
-        
+
         // Print prompt than promptly flush output to sync up.
         if !failed {
             print!("{}", PROMPT);
-        }
-        else {
+        } else {
             print!("{}", Red.paint(PROMPT).to_string());
         }
 
@@ -44,10 +43,7 @@ fn main() {
 
         if input.len() > 0 {
             if input != "\n" {
-                let first_char = input
-                    .chars()
-                    .next()
-                    .unwrap();
+                let first_char = input.chars().next().unwrap();
 
                 if first_char != ';' {
                     let result = env.eval(&input);
@@ -56,17 +52,15 @@ fn main() {
                         Ok(expr) => {
                             failed = false;
                             println!("{}", print_tree(&expr));
-                        },
-                        Err(msg) => 
-                        {
+                        }
+                        Err(msg) => {
                             failed = true;
                             println!("{}", &msg);
-                        },
+                        }
                     };
                 }
             }
-        }
-        else {
+        } else {
             print!("\n");
             break;
         }
@@ -76,7 +70,7 @@ fn main() {
 fn print_tree(expr_tree: &Expr) -> String {
     match expr_tree {
         Expr::List(v) => print_list(v),
-        Expr::Atom(atom) => print_atom(&atom)
+        Expr::Atom(atom) => print_atom(&atom),
     }
 }
 
@@ -90,7 +84,7 @@ fn print_atom(expr_atom: &Atom) -> String {
         Atom::Number(n) => Red.paint(n.to_string()).to_string(),
         Atom::Symbol(s) => s.to_string(),
         Atom::Nil => Red.paint(syntax::NIL_LIT.to_string()).to_string(),
-        Atom::Lambda(ld) => print_lambda(ld)
+        Atom::Lambda(ld) => print_lambda(ld),
     };
 
     result
@@ -99,7 +93,7 @@ fn print_atom(expr_atom: &Atom) -> String {
 fn print_lambda(lambda: &LambdaDef) -> String {
     // create new string with lambda at start.
     let mut acc = String::new();
-    
+
     acc.push('(');
     acc.push_str(syntax::FUN_OP);
     acc.push(' ');
@@ -107,7 +101,7 @@ fn print_lambda(lambda: &LambdaDef) -> String {
     acc.push(' ');
     acc.push_str(&print_tree(&*lambda.body));
     acc.push(')');
-    
+
     acc
 }
 
@@ -118,15 +112,13 @@ fn print_list(expr_list: &Vec<Expr>) -> String {
         if i == 0 {
             acc.push('(');
             acc.push_str(&print_tree(exp));
-        }
-        else {
+        } else {
             acc.push_str(&print_tree(exp));
         }
-        
+
         if i == expr_list.len() - 1 {
             acc.push(')');
-        }
-        else {
+        } else {
             acc.push(' ');
         }
     }

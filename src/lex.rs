@@ -1,9 +1,9 @@
-use std::vec::Vec;
-use std::result::Result;
-use std::str::FromStr;
-use bigdecimal::BigDecimal;
 use crate::syntax;
 use crate::syntax::*;
+use bigdecimal::BigDecimal;
+use std::result::Result;
+use std::str::FromStr;
+use std::vec::Vec;
 
 /**
  * Returns all tokens in code separated into a list of strings.
@@ -16,7 +16,7 @@ pub fn lexical_analysis(code: &String) -> Result<Vec<String>, String> {
 
     match is_matching {
         true => Result::Ok(tokenize(code)),
-        false => Result::Err("Missing closing or opening parenthesis.".to_string())
+        false => Result::Err("Missing closing or opening parenthesis.".to_string()),
     }
 }
 
@@ -29,17 +29,13 @@ pub fn lexical_analysis(code: &String) -> Result<Vec<String>, String> {
 fn parse_atom(atom: &String) -> Expr {
     if is_string(atom) {
         Expr::Atom(Atom::StringLiteral(atom.to_owned()))
-    }
-    else if BigDecimal::from_str(&atom).is_ok() {
+    } else if BigDecimal::from_str(&atom).is_ok() {
         Expr::Atom(Atom::Number(BigDecimal::from_str(&atom).unwrap()))
-    }
-    else if is_boolean(atom) {
+    } else if is_boolean(atom) {
         Expr::Atom(Atom::Boolean(atom == "#t"))
-    }
-    else if atom == syntax::NIL_LIT {
+    } else if atom == syntax::NIL_LIT {
         Expr::Atom(Atom::Nil)
-    }
-    else {
+    } else {
         Expr::Atom(Atom::Symbol(atom.to_owned()))
     }
 }
@@ -50,8 +46,7 @@ fn parens_match_and_exist(code: &String) -> bool {
     for c in code.chars() {
         if c == '(' {
             unclosed_opens += 1;
-        }
-        else if c == ')' {
+        } else if c == ')' {
             unclosed_opens -= 1;
         }
     }
@@ -65,8 +60,7 @@ fn tokens_match_parens(tokens: &Vec<String>) -> bool {
     for token in tokens {
         if token == "(" {
             unclosed_opens += 1;
-        }
-        else if token == ")" {
+        } else if token == ")" {
             unclosed_opens -= 1;
         }
     }
@@ -94,8 +88,7 @@ pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
                     local_expr.push(expr);
 
                     current_expr.clear();
-                }
-                else if current_expr.len() == 1 {
+                } else if current_expr.len() == 1 {
                     let expr = parse_atom(&current_expr[0]);
                     local_expr.push(expr);
 
@@ -109,23 +102,24 @@ pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
 
     if local_expr.len() > 1 {
         return Expr::List(local_expr);
-    }
-    else {
-        return local_expr.get(0).unwrap_or(&Expr::Atom(Atom::Nil)).to_owned();
+    } else {
+        return local_expr
+            .get(0)
+            .unwrap_or(&Expr::Atom(Atom::Nil))
+            .to_owned();
     }
 }
 
 fn is_boolean(atom: &String) -> bool {
     // Boolean literals are '#f' and '#t'
     // for true and false respectively.
-    let is_boolean = atom == syntax::FALSE_LIT
-        ||  atom == syntax::TRUE_LIT;
+    let is_boolean = atom == syntax::FALSE_LIT || atom == syntax::TRUE_LIT;
 
     return is_boolean;
 }
 
 fn is_string(atom: &String) -> bool {
-    const BACKSLASH_C: char = '\\'; 
+    const BACKSLASH_C: char = '\\';
     const QUOTE_C: char = '\'';
     let mut is_string: bool = true;
 
@@ -135,13 +129,11 @@ fn is_string(atom: &String) -> bool {
                 is_string = false;
                 break;
             }
-        }
-        else if c == QUOTE_C {
+        } else if c == QUOTE_C {
             if i == 1 {
                 is_string = false;
                 break;
-            }
-            else {
+            } else {
                 let next_c = atom.as_bytes()[i - 1] as char;
                 if next_c != BACKSLASH_C {
                     is_string = false;
@@ -167,7 +159,7 @@ fn is_string(atom: &String) -> bool {
 //         .map(|x| x.trim().to_string())
 //         .filter(|x| !x.trim().is_empty())
 //         .collect();
-    
+
 //     // If it's a single token, surround it with parentheses.
 //     if result.len() == 1 {
 //         result.insert(0, "(".to_string());
@@ -199,8 +191,7 @@ fn tokenize(source: &String) -> Vec<String> {
                         tokens.push(current_str.clone());
                         current_str.clear();
                     }
-                }
-                else {
+                } else {
                     current_str.push(v.clone());
                 }
             }
@@ -214,18 +205,16 @@ fn tokenize(source: &String) -> Vec<String> {
                     current_str.push(v.clone());
                     tokens.push(current_str.clone());
                     current_str.clear();
-                }
-                else {
+                } else {
                     if !current_str.is_empty() {
                         tokens.push(current_str.clone());
                         current_str.clear();
                     }
-                    
+
                     in_quotes = true;
                     current_str.push(v.clone());
                 }
-            }
-            else if v == &'(' {
+            } else if v == &'(' {
                 position += 1;
 
                 if !in_quotes {
@@ -235,12 +224,10 @@ fn tokenize(source: &String) -> Vec<String> {
                     }
 
                     tokens.push(String::from("("));
-                }
-                else {
+                } else {
                     current_str.push(v.clone());
                 }
-            }
-            else if v == &')' {
+            } else if v == &')' {
                 position += 1;
 
                 if !in_quotes {
@@ -250,17 +237,14 @@ fn tokenize(source: &String) -> Vec<String> {
                     }
 
                     tokens.push(String::from(")"));
-                }
-                else {
+                } else {
                     current_str.push(v.clone());
                 }
-            }
-            else {
+            } else {
                 position += 1;
                 current_str.push(v.clone());
             }
-        }
-        else {
+        } else {
             if !current_str.is_empty() {
                 tokens.push(current_str.clone());
                 current_str.clear();

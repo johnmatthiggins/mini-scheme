@@ -1,17 +1,17 @@
-use std::collections::HashMap;
-use crate::lex;
-use crate::built_in::EnvPrimitives;
-use crate::sys::EnvSys;
 use crate::boolean::LogicOps;
-use crate::syntax::Expr;
-use crate::syntax::Atom;
-use crate::syntax::LambdaDef;
-use crate::syntax;
+use crate::built_in::EnvPrimitives;
+use crate::lex;
 use crate::math::MathOps;
+use crate::syntax;
+use crate::syntax::Atom;
+use crate::syntax::Expr;
+use crate::syntax::LambdaDef;
+use crate::sys::EnvSys;
+use std::collections::HashMap;
 
 pub type Env = HashMap<String, Expr>;
 
-pub trait EnvTrait {
+pub trait Eval {
     fn eval(&mut self, input: &String) -> Result<Expr, String>;
     fn eval_list(&mut self, list: &Vec<Expr>) -> Result<Expr, String>;
     fn eval_car_cdr(&mut self, car: Atom, cdr: &Vec<Expr>) -> Result<Expr, String>;
@@ -21,7 +21,7 @@ pub trait EnvTrait {
     fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>) -> Result<Expr, String>;
 }
 
-impl EnvTrait for Env {
+impl Eval for Env {
     fn eval(&mut self, input: &String) -> Result<Expr, String> {
         let ast = lex::lexical_analysis(input)
             .map(|x| lex::parse_tokens(&x))
@@ -35,28 +35,28 @@ impl EnvTrait for Env {
             .first()
             .map(|x| match x {
                 Expr::List(_) => self.simplify(x),
-                Expr::Atom(_) => Ok(x.to_owned())
+                Expr::Atom(_) => Ok(x.to_owned()),
             })
             .and_then(|x| match x {
                 Ok(v) => Some(v),
-                Err(_) => None
+                Err(_) => None,
             });
 
         match car {
             Some(expr) => match expr {
-                Expr::Atom(atom)
-                    => self.eval_car_cdr(atom.to_owned(), &list[1..].to_vec()),
-                Expr::List(_)
-                    => Result::Err("First token in list must be function name.".to_string())
+                Expr::Atom(atom) => self.eval_car_cdr(atom.to_owned(), &list[1..].to_vec()),
+                Expr::List(_) => {
+                    Result::Err("First token in list must be function name.".to_string())
+                }
             },
-            None => Result::Err("Empty list is not a valid token.".to_string())
+            None => Result::Err("Empty list is not a valid token.".to_string()),
         }
     }
 
     fn eval_car_cdr(&mut self, car: Atom, cdr: &Vec<Expr>) -> Result<Expr, String> {
         match car {
             Atom::Symbol(name) => self.apply(&name, cdr),
-            _ => Result::Err("First token in list must be function name.".to_string())
+            _ => Result::Err("First token in list must be function name.".to_string()),
         }
     }
 
@@ -67,7 +67,7 @@ impl EnvTrait for Env {
         let ERROR_MESSAGE = "Symbol cannot be used as function.";
 
         if !self.contains_key(func) {
-           match func.as_str() {
+            match func.as_str() {
                 syntax::EQ_OP => self.eq(args),
                 syntax::ADD_OP => self.add(args),
                 syntax::SUB_OP => self.sub(args),
@@ -90,11 +90,10 @@ impl EnvTrait for Env {
                 syntax::FUN_OP => self.lambda(args),
                 _ => Result::Err("Function name not recognized.".to_string()),
             }
-        }
-        else {
+        } else {
             // Probably will have to remove this once we start implementing the LAMBDA.
             // return Result::Err("Value cannot be used as function.".to_string());
-            
+
             // Grab possibly lambda function from local environment.
             let copy_env = self.clone();
             let maybe_lambda = copy_env
@@ -103,16 +102,16 @@ impl EnvTrait for Env {
                 .unwrap_or(Err(ERROR_MESSAGE.to_string()))
                 .and_then(|x| match x {
                     Expr::Atom(v) => Ok(v),
-                    Expr::List(_) => Err(ERROR_MESSAGE.to_string())
+                    Expr::List(_) => Err(ERROR_MESSAGE.to_string()),
                 })
                 .and_then(|x| match x {
                     Atom::Lambda(def) => Ok(def),
-                    _ => Err(ERROR_MESSAGE.to_string())
+                    _ => Err(ERROR_MESSAGE.to_string()),
                 });
 
             match maybe_lambda {
                 Ok(def) => self.to_owned().execute_lambda(&def, args),
-                Err(msg) => Err(msg)
+                Err(msg) => Err(msg),
             }
         }
     }
@@ -123,32 +122,33 @@ impl EnvTrait for Env {
             // Don't worry about atoms right now.
             Expr::Atom(atom) => match atom {
                 Atom::Symbol(s) => self.get_symbol(&s),
-                _ => Ok(Expr::Atom(atom.to_owned()))
-            }
+                _ => Ok(Expr::Atom(atom.to_owned())),
+            },
         }
     }
 
     fn get_symbol(&mut self, s: &String) -> Result<Expr, String> {
-        let result = self.to_owned().get(s)
+        let result = self
+            .to_owned()
+            .get(s)
             .map(|x| self.simplify(&x))
-            .unwrap_or(Err(format!("Symbol of name '{}' is undefined.", s).to_string()));
-        
+            .unwrap_or(Err(
+                format!("Symbol of name '{}' is undefined.", s).to_string()
+            ));
+
         return result;
     }
 
-    fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>)
-        -> Result<Expr, String> {
-        
+    fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>) -> Result<Expr, String> {
         // Create local session for evaluating a function.
         let mut local_env = self.clone();
-        
+
         let body = &*lambda_def.body;
         let params = &lambda_def.params;
 
         if params.len() != args.len() {
             Err("Incorrect argument count for function call.".to_string())
-        }
-        else {
+        } else {
             // Take both vectors of args and params and combine them
             // in an ordered fashion.
             // Then after that insert each one into the local environment.
@@ -159,17 +159,17 @@ impl EnvTrait for Env {
                 let name = Result::Ok(name_expr)
                     .and_then(|x| match x {
                         Expr::Atom(v) => Ok(v),
-                        Expr::List(_) => Err("List cannot be parameter name.".to_string())
+                        Expr::List(_) => Err("List cannot be parameter name.".to_string()),
                     })
                     .and_then(|x| match x {
                         Atom::Symbol(s) => Ok(s),
-                        _ => Err("Parameter name must be valid symbol.".to_string())
+                        _ => Err("Parameter name must be valid symbol.".to_string()),
                     });
-                
+
                 match name {
                     Ok(v) => {
                         local_env.insert(v.to_owned(), arg.to_owned());
-                    },
+                    }
                     Err(msg) => {
                         return Err(msg);
                     }
