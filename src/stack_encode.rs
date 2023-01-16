@@ -1,21 +1,28 @@
 use crate::stack::StackInstruction;
+use std::collections::VecDeque;
 
-fn encode_ast(ast: &Expr) -> Vec<StackInstruction> {
+fn encode_ast(ast: &Expr) -> VecDeque<StackInstruction> {
     match ast {
         List(expressions) => {
-            let mut next_instructions = Vec::new();
+            let mut next_instructions = VecDeque::new();
             let mut list_count = 0;
             let cdr = expressions[1..];
             let car = expressions.first().unwrap();
 
             for next_expr in cdr {
                 match next_expr {
-                    List() => {
+                    List(expressions) => {
                         if list_count == 0 {
-                            next_instructions.prepend(encode_ast(next_expr));
+                            let mut prepended = encode_ast(next_expr);
+                            prepended.append(next_instructions);
+
+                            next_instructions = prepended;
                         } else {
+                            let mut prepended = encode_ast(next_expr);
+                            prepended.append(next_instructions);
+
+                            next_instructions = prepended;
                             next_instructions.push_front(StackInstruction::Wait);
-                            next_instructions.prepend(encode_ast(next_expr));
                         }
                         list_count += 1;
                     },
