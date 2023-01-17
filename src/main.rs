@@ -53,9 +53,6 @@ fn main() {
                     print!("\n");
                     break;
                 },
-                "" => {
-                    print!("\n");
-                },
                 _ => {
                     let first_char = input.chars().next().unwrap();
 
@@ -65,6 +62,8 @@ fn main() {
                             .map(|x| lex::parse_tokens(&x))
                             .map(|x| stack_encode::encode_ast(&x))
                             .unwrap();
+
+                        dbg!(&instructions);
 
                         let result = sm.run_instructions(instructions);
 

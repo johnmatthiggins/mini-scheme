@@ -64,7 +64,7 @@ pub fn encode_ast(ast: &Expr) -> VecDeque<StackInstruction> {
                                 prepended.append(&mut next_instructions);
 
                                 next_instructions = prepended;
-                                next_instructions.push_front(StackInstruction::Wait);
+                                next_instructions.push_back(StackInstruction::Wait);
                             }
                             list_count += 1;
                         },
