@@ -8,6 +8,7 @@ use crate::syntax::Expr;
 use crate::syntax::LambdaDef;
 use crate::sys::EnvSys;
 use std::collections::HashMap;
+use std::boxed::Box;
 
 pub type Env = HashMap<String, Expr>;
 
@@ -88,6 +89,7 @@ impl Eval for Env {
                 syntax::PRINT_FN => self.print(args),
                 syntax::PRINTLN_FN => self.println(args),
                 syntax::FUN_OP => self.lambda(args),
+                syntax::STR_OP => self.string(args),
                 _ => Result::Err("Function name not recognized.".to_string()),
             }
         } else {
@@ -141,10 +143,12 @@ impl Eval for Env {
 
     fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>) -> Result<Expr, String> {
         // Create local session for evaluating a function.
-        let mut local_env = self.clone();
+        // let mut local_env = self.clone();
 
         let body = &*lambda_def.body;
         let params = &lambda_def.params;
+        let mut shadowed_vars: Box<HashMap<String, Expr>> = Box::new(HashMap::new());
+        dbg!(lambda_def);
 
         if params.len() != args.len() {
             Err("Incorrect argument count for function call.".to_string())
@@ -168,7 +172,11 @@ impl Eval for Env {
 
                 match name {
                     Ok(v) => {
-                        local_env.insert(v.to_owned(), arg.to_owned());
+                        let old = self.insert(v.to_owned(), arg.to_owned());
+
+                        if let Some(old) = old {
+                            shadowed_vars.insert(v.to_owned(), old);
+                        }
                     }
                     Err(msg) => {
                         return Err(msg);
@@ -176,7 +184,16 @@ impl Eval for Env {
                 }
             }
 
-            local_env.simplify(&body)
+            let result = self.simplify(&body);
+
+            for (name, value) in shadowed_vars.iter() {
+                self.insert(name.to_owned(), value.to_owned());
+            }
+
+            // clean up new variables...
+            // add old variables that were replaced with newer ones...
+
+            result
         }
     }
 }

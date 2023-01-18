@@ -19,6 +19,7 @@ use std::io;
 use std::io::Write;
 use std::io::BufRead;
 use std::fs::File;
+use std::fs;
 use std::path::Path;
 use std::env::args;
 
@@ -86,7 +87,7 @@ fn repl_mode() {
 
                         let result = sm.run_instructions(instructions);
 
-                        println!("{}", print_tree(&result));
+                        println!("{}", syntax::print_tree(&result));
 
                         // match result {
                         //     Ok(expr) => {
@@ -135,76 +136,23 @@ fn interpret_line(input: &String, sm: &mut StackMachine) {
 }
 
 fn interpreter_mode(path: &String) {
+    let text = fs::read_to_string(path.as_str())
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    interpret_raw_text(&text);
+}
+
+fn interpret_raw_text(text: &String) {
     let mut env: Env = HashMap::new();
     let mut sm = stack::StackMachine::create(env);
-    let mut failed = false;
 
-    if let Ok(lines) = read_lines(path.as_str()) {
-        for line in lines {
-            if let Ok(ip) = line {
-                interpret_line(&ip, &mut sm);
-            }
-        }
+    let lines = chunk_file(&text);
+
+    for line in lines {
+        interpret_line(&line, &mut sm);
     }
-}
-
-fn print_tree(expr_tree: &Expr) -> String {
-    match expr_tree {
-        Expr::List(v) => print_list(v),
-        Expr::Atom(atom) => print_atom(&atom),
-    }
-}
-
-fn print_atom(expr_atom: &Atom) -> String {
-    let result = match expr_atom {
-        Atom::Boolean(b) => match b {
-            true => Red.paint(syntax::TRUE_LIT).to_string(),
-            false => Red.paint(syntax::FALSE_LIT).to_string(),
-        },
-        Atom::StringLiteral(s) => Yellow.paint(s.to_string()).to_string(),
-        Atom::Number(n) => Red.paint(n.to_string()).to_string(),
-        Atom::Symbol(s) => s.to_string(),
-        Atom::Nil => Red.paint(syntax::NIL_LIT.to_string()).to_string(),
-        Atom::Lambda(ld) => print_lambda(ld),
-    };
-
-    result
-}
-
-fn print_lambda(lambda: &LambdaDef) -> String {
-    // create new string with lambda at start.
-    let mut acc = String::new();
-
-    acc.push('(');
-    acc.push_str(syntax::FUN_OP);
-    acc.push(' ');
-    acc.push_str(&print_list(&lambda.params));
-    acc.push(' ');
-    acc.push_str(&print_tree(&*lambda.body));
-    acc.push(')');
-
-    acc
-}
-
-fn print_list(expr_list: &Vec<Expr>) -> String {
-    let mut acc = String::new();
-
-    for (i, exp) in expr_list.iter().enumerate() {
-        if i == 0 {
-            acc.push('(');
-            acc.push_str(&print_tree(exp));
-        } else {
-            acc.push_str(&print_tree(exp));
-        }
-
-        if i == expr_list.len() - 1 {
-            acc.push(')');
-        } else {
-            acc.push(' ');
-        }
-    }
-
-    acc
 }
 
 fn trim_newline(s: &mut String) -> String {
@@ -224,4 +172,33 @@ fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where P: AsRef<Path>, {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+fn chunk_file(text: &String) -> Vec<String> {
+    let mut chunks: Vec<String> = Vec::new();
+    let mut chunk: String = String::new();
+    let mut nesting_level: u32 = 0;
+
+    for c in text.chars() {
+        if nesting_level > 0 || c == '(' {
+            if c == '\n' {
+                chunk.push(' ');
+            } else {
+                chunk.push(c);
+            }
+        } else if chunk.len() != 0 {
+            chunks.push(chunk.clone());
+            chunk.clear();
+        }
+
+        if c == '(' {
+            nesting_level += 1;
+        } else if c == ')' {
+            nesting_level -= 1;
+        }
+    }
+
+    dbg!(&chunks);
+
+    chunks
 }

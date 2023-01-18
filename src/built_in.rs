@@ -3,10 +3,12 @@ use crate::env::Eval;
 use crate::syntax::Atom;
 use crate::syntax::Expr;
 use crate::syntax::LambdaDef;
+use crate::syntax;
 
 pub trait EnvPrimitives {
     fn define(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn quote(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
+    fn string(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn car(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn cdr(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn lambda(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
@@ -37,6 +39,21 @@ impl EnvPrimitives for Env {
             return Err("Incorrect argument count for 'quote' operator.".to_string());
         } else {
             return Ok(expr[0].to_owned());
+        }
+    }
+
+    fn string(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
+        if expr.len() != 1 {
+            return Err("Incorrect argument count for 'string' operator.".to_string());
+        } else {
+            let tree = self.simplify(&expr[0]);
+
+            let result = match tree {
+                Ok(v) => string_exp(&v),
+                Err(msg) => Err(msg),
+            };
+
+            return result;
         }
     }
 
@@ -92,6 +109,14 @@ impl EnvPrimitives for Env {
 
             return Ok(Expr::Atom(Atom::Lambda(result)));
         }
+    }
+}
+
+fn string_exp(expr: &Expr) -> Result<Expr, String> {
+    match expr {
+        Expr::Atom(_) => Ok(Expr::Atom(
+                Atom::StringLiteral(syntax::print_tree(expr)))),
+        Expr::List(list) => Err(String::from("'string' operator can only be applied to atomic types...")),
     }
 }
 
