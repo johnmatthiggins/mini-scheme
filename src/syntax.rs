@@ -54,7 +54,7 @@ pub enum Atom {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
     List(Vec<Expr>),
-    Atom(Atom),
+    Atom(Box<Atom>),
 }
 
 pub fn print_tree(expr_tree: &Expr) -> String {

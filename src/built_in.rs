@@ -17,7 +17,7 @@ pub trait EnvPrimitives {
 impl EnvPrimitives for Env {
     fn define(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
         if expr.len() != 2 {
-            return Err("Incorrect number of arguments for 'define' operator.".to_string());
+            Err("Incorrect number of arguments for 'define' operator.".to_string())
         } else {
             // Add new symbol definition to environment.
             let current_expr = &expr[0];
@@ -25,12 +25,12 @@ impl EnvPrimitives for Env {
             let symbol = try_get_symbol_string(current_expr);
 
             let result = symbol.map(|x| {
-                self.insert(x.to_owned(), symbol_def.to_owned());
+                self.insert(x.to_owned(), Box::new(symbol_def.to_owned()));
 
-                return Expr::Atom(Atom::Symbol(x));
+                Expr::Atom(Box::new(Atom::Symbol(x)))
             });
 
-            return result;
+            result
         }
     }
 
@@ -107,7 +107,7 @@ impl EnvPrimitives for Env {
                 body: body,
             };
 
-            return Ok(Expr::Atom(Atom::Lambda(result)));
+            Ok(Expr::Atom(Box::new(Atom::Lambda(result))))
         }
     }
 }
@@ -115,7 +115,7 @@ impl EnvPrimitives for Env {
 fn string_exp(expr: &Expr) -> Result<Expr, String> {
     match expr {
         Expr::Atom(_) => Ok(Expr::Atom(
-                Atom::StringLiteral(syntax::print_tree(expr)))),
+                Box::new(Atom::StringLiteral(syntax::print_tree(expr))))),
         Expr::List(list) => Err(String::from("'string' operator can only be applied to atomic types...")),
     }
 }
@@ -141,7 +141,7 @@ fn cdr_exp(expr: &Expr) -> Result<Expr, String> {
 
 fn try_get_symbol_string(expr: &Expr) -> Result<String, String> {
     match expr {
-        Expr::Atom(atom) => match atom {
+        Expr::Atom(atom) => match &**atom {
             Atom::Symbol(s) => Ok(s.to_owned()),
             _ => Err("Invalid symbol name.".to_string()),
         },

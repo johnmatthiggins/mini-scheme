@@ -10,7 +10,7 @@ use crate::sys::EnvSys;
 use std::collections::HashMap;
 use std::boxed::Box;
 
-pub type Env = HashMap<String, Expr>;
+pub type Env = Box<HashMap<String, Box<Expr>>>;
 
 pub trait Eval {
     fn eval(&mut self, input: &String) -> Result<Expr, String>;
@@ -45,7 +45,7 @@ impl Eval for Env {
 
         match car {
             Some(expr) => match expr {
-                Expr::Atom(atom) => self.eval_car_cdr(atom.to_owned(), &list[1..].to_vec()),
+                Expr::Atom(atom) => self.eval_car_cdr(*atom.to_owned(), &list[1..].to_vec()),
                 Expr::List(_) => {
                     Result::Err("First token in list must be function name.".to_string())
                 }
@@ -106,13 +106,14 @@ impl Eval for Env {
                     Expr::Atom(v) => Ok(v),
                     Expr::List(_) => Err(ERROR_MESSAGE.to_string()),
                 })
-                .and_then(|x| match x {
+                .and_then(|x| match *x {
                     Atom::Lambda(def) => Ok(def),
                     _ => Err(ERROR_MESSAGE.to_string()),
                 });
 
             match maybe_lambda {
-                Ok(def) => self.to_owned().execute_lambda(&def, args),
+                Ok(def) => self.to_owned()
+                    .execute_lambda(&def, args),
                 Err(msg) => Err(msg),
             }
         }
@@ -122,7 +123,7 @@ impl Eval for Env {
         match expr {
             Expr::List(list) => self.eval_list(list),
             // Don't worry about atoms right now.
-            Expr::Atom(atom) => match atom {
+            Expr::Atom(atom) => match &**atom {
                 Atom::Symbol(s) => self.get_symbol(&s),
                 _ => Ok(Expr::Atom(atom.to_owned())),
             },
@@ -147,7 +148,7 @@ impl Eval for Env {
 
         let body = &*lambda_def.body;
         let params = &lambda_def.params;
-        let mut shadowed_vars: Box<HashMap<String, Expr>> = Box::new(HashMap::new());
+        let mut shadowed_vars: Box<HashMap<String, Box<Expr>>> = Box::new(HashMap::new());
         dbg!(lambda_def);
 
         if params.len() != args.len() {
@@ -161,18 +162,18 @@ impl Eval for Env {
                 let (arg, name_expr) = it;
 
                 let name = Result::Ok(name_expr)
-                    .and_then(|x| match x {
+                    .and_then(|x| match &*x {
                         Expr::Atom(v) => Ok(v),
                         Expr::List(_) => Err("List cannot be parameter name.".to_string()),
                     })
-                    .and_then(|x| match x {
+                    .and_then(|x| match &**x {
                         Atom::Symbol(s) => Ok(s),
                         _ => Err("Parameter name must be valid symbol.".to_string()),
                     });
 
                 match name {
                     Ok(v) => {
-                        let old = self.insert(v.to_owned(), arg.to_owned());
+                        let old = self.insert(v.to_owned(), Box::new(arg.to_owned()));
 
                         if let Some(old) = old {
                             shadowed_vars.insert(v.to_owned(), old);

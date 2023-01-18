@@ -31,7 +31,7 @@ impl LogicOps for Env {
             }
         }
 
-        return Ok(Expr::Atom(Atom::Boolean(bool_result)));
+        Ok(Expr::Atom(Box::new(Atom::Boolean(bool_result))))
     }
 
     fn or(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
@@ -52,35 +52,35 @@ impl LogicOps for Env {
             }
         }
 
-        return Ok(Expr::Atom(Atom::Boolean(bool_result)));
+        Ok(Expr::Atom(Box::new(Atom::Boolean(bool_result))))
     }
 
     fn not(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         if args.len() != 1 {
-            return Err("Incorrect number of args for 'not' operator.".to_string());
+            Err("Incorrect number of args for 'not' operator.".to_string())
         } else {
             let expr = &args[0];
             let tree = self.simplify(expr);
 
             let result = tree
                 .and_then(|x| try_get_bool(&x))
-                .map(|x| Expr::Atom(Atom::Boolean(!x)));
+                .map(|x| Expr::Atom(Box::new(Atom::Boolean(!x))));
 
-            return result;
+            result
         }
     }
 
     fn atom(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
         if args.len() != 1 {
-            return Err("Incorrect number of args for 'atom' operator.".to_string());
+            Err("Incorrect number of args for 'atom' operator.".to_string())
         } else {
             let expr = &args[0];
             let result = self.simplify(expr).map(|x| match x {
-                Expr::Atom(_) => Expr::Atom(Atom::Boolean(true)),
-                Expr::List(_) => Expr::Atom(Atom::Boolean(false)),
+                Expr::Atom(_) => Expr::Atom(Box::new(Atom::Boolean(true))),
+                Expr::List(_) => Expr::Atom(Box::new(Atom::Boolean(false))),
             });
 
-            return result;
+            result
         }
     }
 
@@ -93,16 +93,16 @@ impl LogicOps for Env {
                 false => self.simplify(&args[2]),
             });
 
-            return return_exp;
+            return_exp
         } else {
-            return Err("Incorrect number of arguments for 'if' operator.".to_string());
+            Err("Incorrect number of arguments for 'if' operator.".to_string())
         }
     }
 }
 
 fn try_get_bool(expr: &Expr) -> Result<bool, String> {
     match expr {
-        Expr::Atom(atom) => match atom {
+        Expr::Atom(atom) => match **atom {
             Atom::Boolean(b) => Ok(b.to_owned()),
             _ => Err("Cannot perform operation on non-boolean value.".to_string()),
         },

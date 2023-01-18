@@ -28,15 +28,15 @@ pub fn lexical_analysis(code: &String) -> Result<Vec<String>, String> {
  */
 fn parse_atom(atom: &String) -> Expr {
     if is_string(atom) {
-        Expr::Atom(Atom::StringLiteral(atom.to_owned()))
+        Expr::Atom(Box::new(Atom::StringLiteral(atom.to_owned())))
     } else if BigDecimal::from_str(&atom).is_ok() {
-        Expr::Atom(Atom::Number(BigDecimal::from_str(&atom).unwrap()))
+        Expr::Atom(Box::new(Atom::Number(BigDecimal::from_str(&atom).unwrap())))
     } else if is_boolean(atom) {
-        Expr::Atom(Atom::Boolean(atom == "#t"))
+        Expr::Atom(Box::new(Atom::Boolean(atom == "#t")))
     } else if atom == syntax::NIL_LIT {
-        Expr::Atom(Atom::Nil)
+        Expr::Atom(Box::new(Atom::Nil))
     } else {
-        Expr::Atom(Atom::Symbol(atom.to_owned()))
+        Expr::Atom(Box::new(Atom::Symbol(atom.to_owned())))
     }
 }
 
@@ -101,12 +101,12 @@ pub fn parse_tokens(tokens: &Vec<String>) -> Expr {
     }
 
     if local_expr.len() > 1 {
-        return Expr::List(local_expr);
+        Expr::List(local_expr)
     } else {
-        return local_expr
+        local_expr
             .get(0)
-            .unwrap_or(&Expr::Atom(Atom::Nil))
-            .to_owned();
+            .unwrap_or(&Expr::Atom(Box::new(Atom::Nil)))
+            .to_owned()
     }
 }
 

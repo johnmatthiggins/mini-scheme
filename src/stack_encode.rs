@@ -16,7 +16,7 @@ pub enum StackInstruction {
 
 pub fn is_define_keyword(expr: &Expr) -> bool {
     if let Expr::Atom(atom) = expr {
-        if let Atom::Symbol(name) = atom {
+        if let Atom::Symbol(name) = &**atom {
             name.as_str() == "define"
         } else {
             false
@@ -28,7 +28,7 @@ pub fn is_define_keyword(expr: &Expr) -> bool {
 
 pub fn is_lambda_keyword(expr: &Expr) -> bool {
     if let Expr::Atom(atom) = expr {
-        if let Atom::Symbol(name) = atom {
+        if let Atom::Symbol(name) = &**atom {
             name.as_str() == "lambda"
         } else {
             false

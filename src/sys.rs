@@ -21,7 +21,7 @@ impl EnvSys for Env {
 
             match arg1 {
                 Ok(v) => match v {
-                    Expr::Atom(a) => match a {
+                    Expr::Atom(a) => match *a {
                         Atom::StringLiteral(s) => {
                             let trimmed: &str = &s.as_str()[1..s.len() - 1];
                             let mut f = File::open(trimmed);
@@ -29,7 +29,7 @@ impl EnvSys for Env {
 
                             let result = f.and_then(|mut x| x.read_to_string(&mut buf));
                             if let Ok(_) = result {
-                                Ok(Expr::Atom(Atom::StringLiteral(buf)))
+                                Ok(Expr::Atom(Box::new(Atom::StringLiteral(buf))))
                             } else {
                                 Err(String::from("'slurp' could not read file..."))
                             }
@@ -67,10 +67,10 @@ impl EnvSys for Env {
 
             match arg1 {
                 Ok(v) => match v {
-                    Expr::Atom(a) => match a {
+                    Expr::Atom(a) => match *a {
                         Atom::StringLiteral(s) => {
                             print!("{}\n", s);
-                            Ok(Expr::Atom(Atom::Nil))
+                            Ok(Expr::Atom(Box::new(Atom::Nil)))
                         }
                         _ => Err(String::from("The argument of 'slurp' must be a string!")),
                     },
@@ -89,10 +89,10 @@ impl EnvSys for Env {
 
             match arg1 {
                 Ok(v) => match v {
-                    Expr::Atom(a) => match a {
+                    Expr::Atom(a) => match *a {
                         Atom::StringLiteral(s) => {
                             print!("{}\n", s);
-                            Ok(Expr::Atom(Atom::Nil))
+                            Ok(Expr::Atom(Box::new(Atom::Nil)))
                         }
                         _ => Err(String::from("The argument of 'slurp' must be a string!")),
                     },

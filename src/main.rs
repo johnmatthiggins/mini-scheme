@@ -22,11 +22,29 @@ use std::fs::File;
 use std::fs;
 use std::path::Path;
 use std::env::args;
+use std::mem;
+use std::rc;
+use bigdecimal::BigDecimal;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PROMPT: &str = "~> ";
 
 fn main() {
+    println!("SIZES OF DATA TYPES:");
+    println!("BYTE: {}", mem::size_of::<u8>());
+    println!("BigDecimal {}", mem::size_of::<BigDecimal>());
+    println!("Box<HashMap<X, Y>>: {}", mem::size_of::<Box<HashMap<String, String>>>());
+    println!("Ref<HashMap<X, Y>>: {}", mem::size_of::<rc::Rc<HashMap<String, String>>>());
+    println!("Result<Expr, String>: {}", mem::size_of::<Result<syntax::Expr, String>>());
+    println!("String: {}", mem::size_of::<String>());
+    println!("Vec<Expr>: {}", mem::size_of::<Vec<syntax::Expr>>());
+    println!("LAMBDA: {}", mem::size_of::<syntax::LambdaDef>());
+    println!("ATOM: {}", mem::size_of::<syntax::Atom>());
+    println!("EXPRESSION: {}", mem::size_of::<syntax::Expr>());
+    println!("HASHMAP: {}", mem::size_of::<HashMap<String, String>>());
+    // println!("LAMBDA: {}", mem::size_of<>());
+    // println!("LAMBDA: {}", mem::size_of<>());
+
     let args: Vec<String> = args().collect();
 
     if let Some(arg) = args.get(1) {
@@ -44,7 +62,7 @@ fn repl_mode() {
     print!("Mini-Scheme Version {}\n", VERSION);
 
     // Holds all the predefined functions and values for REPL session.
-    let mut env: Env = HashMap::new();
+    let mut env: Env = Box::new(HashMap::new());
     let mut sm = stack::StackMachine::create(env);
     let mut failed = false;
 
@@ -145,7 +163,7 @@ fn interpreter_mode(path: &String) {
 }
 
 fn interpret_raw_text(text: &String) {
-    let mut env: Env = HashMap::new();
+    let mut env: Env = Box::new(HashMap::new());
     let mut sm = stack::StackMachine::create(env);
 
     let lines = chunk_file(&text);
@@ -166,12 +184,6 @@ fn trim_newline(s: &mut String) -> String {
     }
 
     trimmed
-}
-
-fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    Ok(io::BufReader::new(file).lines())
 }
 
 fn chunk_file(text: &String) -> Vec<String> {

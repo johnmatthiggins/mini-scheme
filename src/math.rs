@@ -49,7 +49,7 @@ impl MathOps for Env {
                     }
                 }
 
-                return Result::Ok(Expr::Atom(Atom::Boolean(is_eq)));
+                Result::Ok(Expr::Atom(Box::new(Atom::Boolean(is_eq))))
             }
             Err(msg) => Result::Err(msg),
         }
@@ -58,14 +58,18 @@ impl MathOps for Env {
     // elementary functions of math.
 
     fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
-        let mut total: BigDecimal = BigDecimal::from(0);
+        loop {}
+        dbg!("MADE IT TO THE ADD FUNCTION");
+        let mut total: Box<BigDecimal> = Box::new(BigDecimal::from(0));
 
         for expr in args.into_iter() {
+            dbg!("TIME TO SIMPLIFY");
             let simple_tree = self.simplify(expr);
+            dbg!("DONE SIMPLIFYING");
 
             if simple_tree.is_ok() {
                 let number = match simple_tree.unwrap() {
-                    Expr::Atom(atom) => match atom {
+                    Expr::Atom(atom) => match *atom {
                         Atom::Number(n) => Result::Ok(n),
                         _ => Result::Err(
                             "Non-number atom cannot have operator '+' applied to it.".to_string(),
@@ -78,7 +82,7 @@ impl MathOps for Env {
 
                 match number {
                     Ok(v) => {
-                        total += v;
+                        *total += v;
                     }
                     Err(msg) => {
                         return Result::Err(msg);
@@ -89,7 +93,7 @@ impl MathOps for Env {
             }
         }
 
-        return Result::Ok(Expr::Atom(Atom::Number(total)));
+        Result::Ok(Expr::Atom(Box::new(Atom::Number(*total))))
     }
 
     fn sub(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
@@ -111,7 +115,7 @@ impl MathOps for Env {
             match simple_tree {
                 Ok(v) => {
                     let number = match v {
-                        Expr::Atom(atom) => match atom {
+                        Expr::Atom(atom) => match *atom {
                             Atom::Number(n) => Result::Ok(n),
                             _ => Result::Err(
                                 "Non-number atom cannot have operator '*' applied to it."
@@ -135,7 +139,7 @@ impl MathOps for Env {
             }
         }
 
-        return Result::Ok(Expr::Atom(Atom::Number(total)));
+        Result::Ok(Expr::Atom(Box::new(Atom::Number(total))))
     }
 
     fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
@@ -173,7 +177,7 @@ fn apply_neg_op(env: &Env, args: &Vec<Expr>, info: &OpInfo) -> Result<Expr, Stri
         .ok_or(format!("Incorrect argument count for '{}' operator.", info.name).to_string())
         .and_then(|x| local_env.simplify(x))
         .and_then(|x| match x {
-            Expr::Atom(atom) => match atom {
+            Expr::Atom(atom) => match *atom {
                 Atom::Number(n) => Ok(n.to_owned()),
                 _ => Err(format!(
                     "Cannot perform '{}' operator on non-numeric type.",
@@ -197,7 +201,7 @@ fn apply_neg_op(env: &Env, args: &Vec<Expr>, info: &OpInfo) -> Result<Expr, Stri
     } else {
         let result = total
             // .map(|x| Ok(Expr::Atom(Atom::Number(BigDecimal::from(1) / x))))
-            .map(|x| Ok(Expr::Atom(Atom::Number((info.op_fn)(&info.default, &x)))))
+            .map(|x| Ok(Expr::Atom(Box::new(Atom::Number((info.op_fn)(&info.default, &x))))))
             .unwrap_or(Err(format!(
                 "Cannot perform '{}' operator on non-numeric type.",
                 info.name
@@ -224,7 +228,7 @@ fn apply_first_rest(
         match simple_tree {
             Ok(tree) => {
                 let number = match tree {
-                    Expr::Atom(atom) => match atom {
+                    Expr::Atom(atom) => match *atom {
                         Atom::Number(n) => Result::Ok(n),
                         _ => Result::Err(
                             format!(
@@ -253,5 +257,5 @@ fn apply_first_rest(
         };
     }
 
-    return Result::Ok(Expr::Atom(Atom::Number(total)));
+    Result::Ok(Expr::Atom(Box::new(Atom::Number(total))))
 }
