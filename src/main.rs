@@ -11,16 +11,35 @@ mod sys;
 use crate::env::Env;
 use crate::env::Eval;
 use crate::syntax::*;
+use crate::stack::StackMachine;
 use ansi_term::Colour::{Blue, Green, Purple, Red, Yellow};
 use std::collections::HashMap;
 use std::collections::VecDeque;
 use std::io;
 use std::io::Write;
+use std::io::BufRead;
+use std::fs::File;
+use std::path::Path;
+use std::env::args;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PROMPT: &str = "~> ";
 
 fn main() {
+    let args: Vec<String> = args().collect();
+
+    if let Some(arg) = args.get(1) {
+        if arg.as_str() == "--repl" {
+            repl_mode();
+        } else {
+            interpreter_mode(&arg);
+        }
+    } else {
+        panic!("Invalid arguments...");
+    }
+}
+
+fn repl_mode() {
     print!("Mini-Scheme Version {}\n", VERSION);
 
     // Holds all the predefined functions and values for REPL session.
@@ -63,7 +82,7 @@ fn main() {
                             .map(|x| stack_encode::encode_ast(&x))
                             .unwrap();
 
-                        dbg!(&instructions);
+                        // dbg!(&instructions);
 
                         let result = sm.run_instructions(instructions);
 
@@ -81,6 +100,49 @@ fn main() {
                         // };
                     }
                 }
+            }
+        }
+    }
+}
+
+fn interpret_line(input: &String, sm: &mut StackMachine) {
+    if input.len() > 0 {
+        let first_char = input.chars().next().unwrap();
+
+        if first_char != ';' {
+            // let result = env.eval(&input);
+            let instructions = lex::lexical_analysis(&input)
+                .map(|x| lex::parse_tokens(&x))
+                .map(|x| stack_encode::encode_ast(&x))
+                .unwrap();
+
+            // dbg!(&instructions);
+
+            let result = sm.run_instructions(instructions);
+
+            // match result {
+            //     Ok(expr) => {
+            //         failed = false;
+            //         println!("{}", print_tree(&expr));
+            //     }
+            //     Err(msg) => {
+            //         failed = true;
+            //         println!("{}", &msg);
+            //     }
+            // };
+        }
+    }
+}
+
+fn interpreter_mode(path: &String) {
+    let mut env: Env = HashMap::new();
+    let mut sm = stack::StackMachine::create(env);
+    let mut failed = false;
+
+    if let Ok(lines) = read_lines(path.as_str()) {
+        for line in lines {
+            if let Ok(ip) = line {
+                interpret_line(&ip, &mut sm);
             }
         }
     }
@@ -156,4 +218,10 @@ fn trim_newline(s: &mut String) -> String {
     }
 
     trimmed
+}
+
+fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+where P: AsRef<Path>, {
+    let file = File::open(filename)?;
+    Ok(io::BufReader::new(file).lines())
 }

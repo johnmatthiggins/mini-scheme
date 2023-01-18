@@ -31,7 +31,6 @@ impl Eval for Env {
     }
 
     fn eval_list(&mut self, list: &Vec<Expr>) -> Result<Expr, String> {
-        dbg!(list);
         let car = list
             .first()
             .map(|x| match x {
