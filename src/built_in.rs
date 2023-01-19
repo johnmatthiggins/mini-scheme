@@ -1,5 +1,6 @@
 use crate::env::Env;
 use crate::env::Eval;
+use crate::env;
 use crate::syntax::Atom;
 use crate::syntax::Expr;
 use crate::syntax::LambdaDef;
@@ -24,8 +25,12 @@ impl EnvPrimitives for Env {
             let symbol_def = &expr[1];
             let symbol = try_get_symbol_string(current_expr);
 
+
             let result = symbol.map(|x| {
-                self.insert(x.to_owned(), Box::new(symbol_def.to_owned()));
+                // Ignore people redefining variables as what they already are...
+                if !env::expr_is_string(&symbol_def, x.as_str()) {
+                    self.insert(x.to_owned(), Box::new(symbol_def.to_owned()));
+                }
 
                 Expr::Atom(Box::new(Atom::Symbol(x)))
             });

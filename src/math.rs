@@ -58,7 +58,6 @@ impl MathOps for Env {
     // elementary functions of math.
 
     fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
-        loop {}
         dbg!("MADE IT TO THE ADD FUNCTION");
         let mut total: Box<BigDecimal> = Box::new(BigDecimal::from(0));
 

@@ -90,7 +90,7 @@ impl Eval for Env {
                 syntax::PRINTLN_FN => self.println(args),
                 syntax::FUN_OP => self.lambda(args),
                 syntax::STR_OP => self.string(args),
-                _ => Result::Err("Function name not recognized.".to_string()),
+                _ => Result::Err(format!("Function name '{}' not recognized.", func.as_str())),
             }
         } else {
             // Probably will have to remove this once we start implementing the LAMBDA.
@@ -112,20 +112,28 @@ impl Eval for Env {
                 });
 
             match maybe_lambda {
-                Ok(def) => self.to_owned()
-                    .execute_lambda(&def, args),
+                Ok(def) => self.to_owned().execute_lambda(&def, args),
                 Err(msg) => Err(msg),
             }
         }
     }
 
     fn simplify(&mut self, expr: &Expr) -> Result<Expr, String> {
+        dbg!("SIMPLIFYING");
+        dbg!(expr);
         match expr {
-            Expr::List(list) => self.eval_list(list),
+            Expr::List(list) => {
+                self.eval_list(list)
+            },
             // Don't worry about atoms right now.
             Expr::Atom(atom) => match &**atom {
-                Atom::Symbol(s) => self.get_symbol(&s),
-                _ => Ok(Expr::Atom(atom.to_owned())),
+                Atom::Symbol(s) => {
+                    let result = self.get_symbol(&s);
+                    result
+                },
+                _ => {
+                    Ok(Expr::Atom(atom.to_owned()))
+                },
             },
         }
     }
@@ -134,22 +142,28 @@ impl Eval for Env {
         let result = self
             .to_owned()
             .get(s)
-            .map(|x| self.simplify(&x))
+            .map(|x| {
+                dbg!(&x);
+                self.simplify(&x)
+            })
             .unwrap_or(Err(
-                format!("Symbol of name '{}' is undefined.", s).to_string()
+                format!("Symbol of name '{}' is undefined.", s)
             ));
 
-        return result;
+        result
     }
 
-    fn execute_lambda(&mut self, lambda_def: &LambdaDef, args: &Vec<Expr>) -> Result<Expr, String> {
+    fn execute_lambda(
+        &mut self,
+        lambda_def: &LambdaDef,
+        args: &Vec<Expr>) -> Result<Expr, String> {
         // Create local session for evaluating a function.
         // let mut local_env = self.clone();
 
         let body = &*lambda_def.body;
         let params = &lambda_def.params;
-        let mut shadowed_vars: Box<HashMap<String, Box<Expr>>> = Box::new(HashMap::new());
-        dbg!(lambda_def);
+        let mut shadowed_vars: Box<HashMap<String, Box<Expr>>>
+            = Box::new(HashMap::new());
 
         if params.len() != args.len() {
             Err("Incorrect argument count for function call.".to_string())
@@ -172,13 +186,16 @@ impl Eval for Env {
                     });
 
                 match name {
-                    Ok(v) => {
-                        let old = self.insert(v.to_owned(), Box::new(arg.to_owned()));
+                    Ok(name) => {
+                        dbg!(arg, name);
+                        if !expr_is_string(arg, name.as_str()) {
+                            let old = self.insert(name.to_owned(), Box::new(arg.to_owned()));
 
-                        if let Some(old) = old {
-                            shadowed_vars.insert(v.to_owned(), old);
+                            if let Some(old) = old {
+                                shadowed_vars.insert(name.to_owned(), old);
+                            }
                         }
-                    }
+                    },
                     Err(msg) => {
                         return Err(msg);
                     }
@@ -196,5 +213,15 @@ impl Eval for Env {
 
             result
         }
+    }
+}
+
+pub fn expr_is_string(expr: &Expr, string: &str) -> bool {
+    match expr {
+        Expr::Atom(atom) => match &**atom {
+            Atom::Symbol(s) => s.as_str() == string,
+            _ => false,
+        },
+        _ => false,
     }
 }
