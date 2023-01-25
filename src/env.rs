@@ -202,14 +202,12 @@ impl Eval for Env {
                 }
             }
 
+            dbg!("SIMPLIFY LAMBDA");
             let result = self.simplify(&body);
 
             for (name, value) in shadowed_vars.iter() {
                 self.insert(name.to_owned(), value.to_owned());
             }
-
-            // clean up new variables...
-            // add old variables that were replaced with newer ones...
 
             result
         }
