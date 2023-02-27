@@ -58,13 +58,13 @@ impl MathOps for Env {
     // elementary functions of math.
 
     fn add(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
-        dbg!("MADE IT TO THE ADD FUNCTION");
+        //dbg!("MADE IT TO THE ADD FUNCTION");
         let mut total: Box<BigDecimal> = Box::new(BigDecimal::from(0));
 
         for expr in args.into_iter() {
-            dbg!("TIME TO SIMPLIFY");
+            //dbg!("TIME TO SIMPLIFY");
             let simple_tree = self.simplify(expr);
-            dbg!("DONE SIMPLIFYING");
+            //dbg!("DONE SIMPLIFYING");
 
             if simple_tree.is_ok() {
                 let number = match simple_tree.unwrap() {

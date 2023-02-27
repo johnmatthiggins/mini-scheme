@@ -141,7 +141,7 @@ impl Eval for Env {
             .to_owned()
             .get(s)
             .map(|x| {
-                dbg!(&x);
+                // dbg!(&x);
                 self.simplify(&x)
             })
             .unwrap_or(Err(
@@ -185,7 +185,7 @@ impl Eval for Env {
 
                 match name {
                     Ok(name) => {
-                        dbg!(arg, name);
+                        // dbg!(arg, name);
                         if !expr_is_string(arg, name.as_str()) {
                             let old = self.insert(name.to_owned(), Box::new(arg.to_owned()));
 
@@ -200,7 +200,7 @@ impl Eval for Env {
                 }
             }
 
-            dbg!("SIMPLIFY LAMBDA");
+            // dbg!("SIMPLIFY LAMBDA");
             let result = self.simplify(&body);
 
             for (name, value) in shadowed_vars.iter() {

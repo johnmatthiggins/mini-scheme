@@ -30,25 +30,25 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PROMPT: &str = "~> ";
 
 fn main() {
-    println!("SIZES OF DATA TYPES:");
-    println!("BYTE: {}", mem::size_of::<u8>());
-    println!("BigDecimal {}", mem::size_of::<BigDecimal>());
-    println!("Box<HashMap<X, Y>>: {}", mem::size_of::<Box<HashMap<String, String>>>());
-    println!("Ref<HashMap<X, Y>>: {}", mem::size_of::<rc::Rc<HashMap<String, String>>>());
-    println!("Result<Expr, String>: {}", mem::size_of::<Result<syntax::Expr, String>>());
-    println!("String: {}", mem::size_of::<String>());
-    println!("Vec<Expr>: {}", mem::size_of::<Vec<syntax::Expr>>());
-    println!("LAMBDA: {}", mem::size_of::<syntax::LambdaDef>());
-    println!("ATOM: {}", mem::size_of::<syntax::Atom>());
-    println!("EXPRESSION: {}", mem::size_of::<syntax::Expr>());
-    println!("HASHMAP: {}", mem::size_of::<HashMap<String, String>>());
+    // println!("SIZES OF DATA TYPES:");
+    // println!("BYTE: {}", mem::size_of::<u8>());
+    // println!("BigDecimal {}", mem::size_of::<BigDecimal>());
+    // println!("Box<HashMap<X, Y>>: {}", mem::size_of::<Box<HashMap<String, String>>>());
+    // println!("Ref<HashMap<X, Y>>: {}", mem::size_of::<rc::Rc<HashMap<String, String>>>());
+    // println!("Result<Expr, String>: {}", mem::size_of::<Result<syntax::Expr, String>>());
+    // println!("String: {}", mem::size_of::<String>());
+    // println!("Vec<Expr>: {}", mem::size_of::<Vec<syntax::Expr>>());
+    // println!("LAMBDA: {}", mem::size_of::<syntax::LambdaDef>());
+    // println!("ATOM: {}", mem::size_of::<syntax::Atom>());
+    // println!("EXPRESSION: {}", mem::size_of::<syntax::Expr>());
+    // println!("HASHMAP: {}", mem::size_of::<HashMap<String, String>>());
     // println!("LAMBDA: {}", mem::size_of<>());
     // println!("LAMBDA: {}", mem::size_of<>());
 
     let args: Vec<String> = args().collect();
 
     if let Some(arg) = args.get(1) {
-        if arg.as_str() == "--repl" {
+        if arg.as_str() == "--repl"  || arg.as_str() == "-r" {
             repl_mode();
         } else {
             interpreter_mode(&arg);
@@ -205,7 +205,7 @@ fn chunk_file(text: &String) -> Vec<String> {
         }
     }
 
-    dbg!(&chunks);
+    // dbg!(&chunks);
 
     chunks
 }
