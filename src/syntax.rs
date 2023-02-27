@@ -57,37 +57,38 @@ pub enum Expr {
     Atom(Box<Atom>),
 }
 
-pub fn print_tree(expr_tree: &Expr) -> String {
+pub fn print_tree(expr_tree: &Expr, color: &bool) -> String {
     match expr_tree {
-        Expr::List(v) => print_list(v),
-        Expr::Atom(atom) => print_atom(&atom),
+        Expr::List(v) => print_list(v, color),
+        Expr::Atom(atom) => print_atom(&atom, color),
     }
 }
 
-fn print_lambda(lambda: &LambdaDef) -> String {
+fn print_lambda(lambda: &LambdaDef, color: &bool) -> String {
     // create new string with lambda at start.
     let mut acc = String::new();
 
     acc.push('(');
     acc.push_str(FUN_OP);
     acc.push(' ');
-    acc.push_str(&print_list(&lambda.params));
+    acc.push_str(&print_list(&lambda.params, color));
+    acc.push_str(&print_list(&lambda.params, color));
     acc.push(' ');
-    acc.push_str(&print_tree(&*lambda.body));
+    acc.push_str(&print_tree(&*lambda.body, color));
     acc.push(')');
 
     acc
 }
 
-fn print_list(expr_list: &Vec<Expr>) -> String {
+fn print_list(expr_list: &Vec<Expr>, color: &bool) -> String {
     let mut acc = String::new();
 
     for (i, exp) in expr_list.iter().enumerate() {
         if i == 0 {
             acc.push('(');
-            acc.push_str(&print_tree(exp));
+            acc.push_str(&print_tree(exp, color));
         } else {
-            acc.push_str(&print_tree(exp));
+            acc.push_str(&print_tree(exp, color));
         }
 
         if i == expr_list.len() - 1 {
@@ -100,7 +101,33 @@ fn print_list(expr_list: &Vec<Expr>) -> String {
     acc
 }
 
-fn print_atom(expr_atom: &Atom) -> String {
+fn print_atom(expr_atom: &Atom, color: &bool) -> String {
+    let result = if *color {
+        print_atom_colored(expr_atom)
+    } else {
+        print_atom_without_color(expr_atom)
+    };
+
+    result
+}
+
+fn print_atom_without_color(expr_atom: &Atom) -> String {
+    let result = match expr_atom {
+        Atom::Boolean(b) => match b {
+            true => TRUE_LIT.to_string(),
+            false => FALSE_LIT.to_string(),
+        },
+        Atom::StringLiteral(s) => s.to_string(),
+        Atom::Number(n) => n.to_string(),
+        Atom::Symbol(s) => s.to_string(),
+        Atom::Nil => NIL_LIT.to_string(),
+        Atom::Lambda(ld) => print_lambda(ld, &false),
+    };
+
+    result
+}
+
+fn print_atom_colored(expr_atom: &Atom) -> String {
     let result = match expr_atom {
         Atom::Boolean(b) => match b {
             true => Red.paint(TRUE_LIT).to_string(),
@@ -110,7 +137,7 @@ fn print_atom(expr_atom: &Atom) -> String {
         Atom::Number(n) => Red.paint(n.to_string()).to_string(),
         Atom::Symbol(s) => s.to_string(),
         Atom::Nil => Red.paint(NIL_LIT.to_string()).to_string(),
-        Atom::Lambda(ld) => print_lambda(ld),
+        Atom::Lambda(ld) => print_lambda(ld, &true),
     };
 
     result

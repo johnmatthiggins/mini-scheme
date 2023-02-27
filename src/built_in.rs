@@ -120,7 +120,7 @@ impl EnvPrimitives for Env {
 fn string_exp(expr: &Expr) -> Result<Expr, String> {
     match expr {
         Expr::Atom(_) => Ok(Expr::Atom(
-                Box::new(Atom::StringLiteral(syntax::print_tree(expr))))),
+                Box::new(Atom::StringLiteral(syntax::print_tree(expr, &false))))),
         Expr::List(list) => Err(String::from("'string' operator can only be applied to atomic types...")),
     }
 }

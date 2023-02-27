@@ -7,6 +7,7 @@ mod lex;
 mod math;
 mod syntax;
 mod sys;
+mod test;
 
 use crate::env::Env;
 use crate::env::Eval;
@@ -103,7 +104,7 @@ fn repl_mode() {
 
                         let result = sm.run_instructions(instructions);
 
-                        println!("{}", syntax::print_tree(&result));
+                        println!("{}", syntax::print_tree(&result, &true));
 
                         // match result {
                         //     Ok(expr) => {
