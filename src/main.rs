@@ -31,21 +31,6 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PROMPT: &str = "~> ";
 
 fn main() {
-    // println!("SIZES OF DATA TYPES:");
-    // println!("BYTE: {}", mem::size_of::<u8>());
-    // println!("BigDecimal {}", mem::size_of::<BigDecimal>());
-    // println!("Box<HashMap<X, Y>>: {}", mem::size_of::<Box<HashMap<String, String>>>());
-    // println!("Ref<HashMap<X, Y>>: {}", mem::size_of::<rc::Rc<HashMap<String, String>>>());
-    // println!("Result<Expr, String>: {}", mem::size_of::<Result<syntax::Expr, String>>());
-    // println!("String: {}", mem::size_of::<String>());
-    // println!("Vec<Expr>: {}", mem::size_of::<Vec<syntax::Expr>>());
-    // println!("LAMBDA: {}", mem::size_of::<syntax::LambdaDef>());
-    // println!("ATOM: {}", mem::size_of::<syntax::Atom>());
-    // println!("EXPRESSION: {}", mem::size_of::<syntax::Expr>());
-    // println!("HASHMAP: {}", mem::size_of::<HashMap<String, String>>());
-    // println!("LAMBDA: {}", mem::size_of<>());
-    // println!("LAMBDA: {}", mem::size_of<>());
-
     let args: Vec<String> = args().collect();
 
     if let Some(arg) = args.get(1) {
@@ -64,7 +49,6 @@ fn repl_mode() {
 
     // Holds all the predefined functions and values for REPL session.
     let mut env: Env = Box::new(HashMap::new());
-    let mut sm = stack::StackMachine::create(env);
     let mut failed = false;
 
     loop {
@@ -96,26 +80,18 @@ fn repl_mode() {
                     let first_char = input.chars().next().unwrap();
 
                     if first_char != ';' {
-                        // let result = env.eval(&input);
-                        let instructions = lex::lexical_analysis(&input)
-                            .map(|x| lex::parse_tokens(&x))
-                            .map(|x| stack_encode::encode_ast(&x))
-                            .unwrap();
+                        let result = env.eval(&input);
 
-                        let result = sm.run_instructions(instructions);
-
-                        println!("{}", syntax::print_tree(&result, &true));
-
-                        // match result {
-                        //     Ok(expr) => {
-                        //         failed = false;
-                        //         println!("{}", print_tree(&expr));
-                        //     }
-                        //     Err(msg) => {
-                        //         failed = true;
-                        //         println!("{}", &msg);
-                        //     }
-                        // };
+                        match result {
+                            Ok(expr) => {
+                                failed = false;
+                                println!("{}", print_tree(&expr, &true));
+                            }
+                            Err(msg) => {
+                                failed = true;
+                                println!("{}", &msg);
+                            }
+                        };
                     }
                 }
             }
@@ -129,12 +105,6 @@ fn interpret_line(input: &String, env: &mut Env) {
 
         if first_char != ';' {
             let result = env.eval(input);
-            // let instructions = lex::lexical_analysis(&input)
-            //     .map(|x| lex::parse_tokens(&x))
-            //     .map(|x| stack_encode::encode_ast(&x))
-            //     .unwrap();
-
-            // dbg!(&instructions);
 
             // match result {
             //     Ok(expr) => {

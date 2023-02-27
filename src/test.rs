@@ -47,3 +47,22 @@ fn using_add2_on_3_will_equal_5() {
 
     assert_eq!(expected, actual);
 }
+
+// Overflows stack currently.
+#[test]
+fn define_add4_in_terms_of_add2() {
+    let mut environment: Env = Box::new(HashMap::new());
+    let expected = Ok(String::from("5"));
+    let define_add2 = String::from("(define add2 (lambda n (+ n 2)))");
+    let define_add4 = String::from("(define add4 (lambda n (add2 (add2 n))))");
+    let equation = String::from("(add4 1)");
+
+    environment.eval(&define_add2);
+    environment.eval(&define_add4);
+
+    let actual = environment
+        .eval(&equation)
+        .map(|x| syntax::print_tree(&x, &false));
+
+    assert_eq!(expected, actual);
+}
