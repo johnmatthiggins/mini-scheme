@@ -101,8 +101,6 @@ fn repl_mode() {
                             .map(|x| stack_encode::encode_ast(&x))
                             .unwrap();
 
-                        // dbg!(&instructions);
-
                         let result = sm.run_instructions(instructions);
 
                         println!("{}", syntax::print_tree(&result));
@@ -124,20 +122,18 @@ fn repl_mode() {
     }
 }
 
-fn interpret_line(input: &String, sm: &mut StackMachine) {
+fn interpret_line(input: &String, env: &mut Env) {
     if input.len() > 0 {
         let first_char = input.chars().next().unwrap();
 
         if first_char != ';' {
-            // let result = env.eval(&input);
-            let instructions = lex::lexical_analysis(&input)
-                .map(|x| lex::parse_tokens(&x))
-                .map(|x| stack_encode::encode_ast(&x))
-                .unwrap();
+            let result = env.eval(input);
+            // let instructions = lex::lexical_analysis(&input)
+            //     .map(|x| lex::parse_tokens(&x))
+            //     .map(|x| stack_encode::encode_ast(&x))
+            //     .unwrap();
 
             // dbg!(&instructions);
-
-            let result = sm.run_instructions(instructions);
 
             // match result {
             //     Ok(expr) => {
@@ -164,12 +160,11 @@ fn interpreter_mode(path: &String) {
 
 fn interpret_raw_text(text: &String) {
     let mut env: Env = Box::new(HashMap::new());
-    let mut sm = stack::StackMachine::create(env);
 
     let lines = chunk_file(&text);
 
     for line in lines {
-        interpret_line(&line, &mut sm);
+        interpret_line(&line, &mut env);
     }
 }
 

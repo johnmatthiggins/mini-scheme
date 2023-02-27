@@ -112,15 +112,13 @@ impl Eval for Env {
                 });
 
             match maybe_lambda {
-                Ok(def) => self.to_owned().execute_lambda(&def, args),
+                Ok(def) => self.execute_lambda(&def, args),
                 Err(msg) => Err(msg),
             }
         }
     }
 
     fn simplify(&mut self, expr: &Expr) -> Result<Expr, String> {
-        dbg!("SIMPLIFYING");
-        dbg!(expr);
         match expr {
             Expr::List(list) => {
                 self.eval_list(list)

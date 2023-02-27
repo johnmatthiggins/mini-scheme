@@ -88,12 +88,10 @@ impl LogicOps for Env {
         if args.len() == 3 {
             let exp0 = self.simplify(&args[0]);
 
-            let return_exp = exp0.and_then(|x| try_get_bool(&x)).and_then(|x| match x {
+            exp0.and_then(|x| try_get_bool(&x)).and_then(|x| match x {
                 true => self.simplify(&args[1]),
                 false => self.simplify(&args[2]),
-            });
-
-            return_exp
+            })
         } else {
             Err("Incorrect number of arguments for 'if' operator.".to_string())
         }
