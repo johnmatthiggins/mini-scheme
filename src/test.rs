@@ -1,5 +1,4 @@
-use crate::env::Env;
-use crate::env::Eval;
+use crate::env::{Env, Eval};
 use crate::syntax;
 use std::collections::HashMap;
 

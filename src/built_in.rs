@@ -1,9 +1,6 @@
-use crate::env::Env;
-use crate::env::Eval;
+use crate::env::{Env, Eval};
 use crate::env;
-use crate::syntax::Atom;
-use crate::syntax::Expr;
-use crate::syntax::LambdaDef;
+use crate::syntax::{Atom, Expr, LambdaDef};
 use crate::syntax;
 
 pub trait EnvPrimitives {
