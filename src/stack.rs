@@ -1,5 +1,4 @@
-use crate::env::Env;
-use crate::env::Eval;
+use crate::env::{Env, Eval};
 use crate::syntax::Expr;
 use crate::stack_encode::StackInstruction;
 use std::collections::VecDeque;

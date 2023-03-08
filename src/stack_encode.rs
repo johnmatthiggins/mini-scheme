@@ -1,5 +1,4 @@
-use crate::syntax::Expr;
-use crate::syntax::Atom;
+use crate::syntax::{Expr, Atom};
 use std::collections::VecDeque;
 
 #[derive(Debug)]
