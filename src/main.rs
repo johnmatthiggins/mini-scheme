@@ -1,5 +1,3 @@
-mod stack_encode;
-mod stack;
 mod boolean;
 mod built_in;
 mod env;
@@ -12,7 +10,6 @@ mod test;
 use crate::env::Env;
 use crate::env::Eval;
 use crate::syntax::*;
-use crate::stack::StackMachine;
 use ansi_term::Colour::{Blue, Green, Purple, Red, Yellow};
 use std::collections::HashMap;
 use std::collections::VecDeque;
