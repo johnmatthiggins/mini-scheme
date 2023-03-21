@@ -1,7 +1,5 @@
-use crate::env::Env;
-use crate::env::Eval;
-use crate::syntax::Atom;
-use crate::syntax::Expr;
+use crate::env::{Env, Eval};
+use crate::syntax::{Atom, Expr};
 
 pub trait LogicOps {
     fn and(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;

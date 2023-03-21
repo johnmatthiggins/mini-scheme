@@ -1,7 +1,5 @@
-use crate::env::Env;
-use crate::env::Eval;
-use crate::syntax::Atom;
-use crate::syntax::Expr;
+use crate::env::{Env, Eval};
+use crate::syntax::{Atom, Expr};
 use bigdecimal::BigDecimal;
 use core::ops::Rem;
 

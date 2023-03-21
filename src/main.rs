@@ -7,15 +7,12 @@ mod syntax;
 mod sys;
 mod test;
 
-use crate::env::Env;
-use crate::env::Eval;
+use crate::env::{Env, Eval};
 use crate::syntax::*;
 use ansi_term::Colour::{Blue, Green, Purple, Red, Yellow};
-use std::collections::HashMap;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::io;
-use std::io::Write;
-use std::io::BufRead;
+use std::io::{Write, BufRead};
 use std::fs::File;
 use std::fs;
 use std::path::Path;
