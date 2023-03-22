@@ -183,12 +183,19 @@ impl Eval for Env {
 
                 match name {
                     Ok(name) => {
-                        // dbg!(arg, name);
                         if !expr_is_string(arg, name.as_str()) {
-                            let old = self.insert(name.to_owned(), Box::new(arg.to_owned()));
+                            let evaluated = self.simplify(&arg);
 
-                            if let Some(old) = old {
-                                shadowed_vars.insert(name.to_owned(), old);
+                            if let Ok(arg_value) = evaluated {
+                                let old = self.insert(
+                                    name.to_owned(),
+                                    Box::new(arg_value.to_owned()));
+
+                                if let Some(old) = old {
+                                    shadowed_vars.insert(name.to_owned(), old);
+                                }
+                            } else {
+                                return Err(evaluated.err().unwrap())
                             }
                         }
                     },
