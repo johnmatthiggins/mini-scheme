@@ -5,6 +5,7 @@ use crate::syntax;
 
 pub trait EnvPrimitives {
     fn define(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
+    fn load(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn quote(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn string(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
     fn car(&mut self, expr: &Vec<Expr>) -> Result<Expr, String>;
@@ -33,6 +34,18 @@ impl EnvPrimitives for Env {
             });
 
             result
+        }
+    }
+
+    fn load(&mut self, expr: &Vec<Expr>) -> Result<Expr, String> {
+        if expr.len() != 1 {
+            Err("Incorrect number of arguments for 'load' operator.".to_string())
+        } else {
+            let file = &expr[0];
+            let fileName = string_or_else(self, file);
+
+            fileName.and_then(|x| env::interpret_file(self, &trim_quotes(&x)))
+                .map(|x| Expr::Atom(Box::new(Atom::StringLiteral(x))))
         }
     }
 
@@ -149,4 +162,32 @@ fn try_get_symbol_string(expr: &Expr) -> Result<String, String> {
         },
         Expr::List(_) => Err("List is not a valid symbol name".to_string()),
     }
+}
+
+fn string_or_else(env: &mut Env, expr: &Expr) -> Result<String, String>
+{
+    let maybeString = env.simplify(expr);
+
+    maybeString
+        .and_then(|x| match x {
+            Expr::Atom(a) => Ok(a),
+            _ => Err(String::from("List cannot be used in place of string..."))
+        })
+        .and_then(|x| match *x {
+            Atom::StringLiteral(s) => Ok(s),
+            _ => Err(String::from("String must be string!!!"))
+        })
+}
+
+fn trim_quotes(s: &String) -> String {
+    let mut trimmed = s.clone();
+
+    if trimmed.ends_with('\'') {
+        trimmed.pop();
+        if trimmed.starts_with('\'') {
+            trimmed.remove(0);
+        }
+    }
+
+    trimmed
 }

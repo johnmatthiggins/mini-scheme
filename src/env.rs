@@ -7,6 +7,7 @@ use crate::syntax::{Atom, Expr, LambdaDef};
 use crate::sys::EnvSys;
 use std::collections::HashMap;
 use std::boxed::Box;
+use std::fs;
 
 pub type Env = Box<HashMap<String, Box<Expr>>>;
 
@@ -88,6 +89,7 @@ impl Eval for Env {
                 syntax::PRINTLN_FN => self.println(args),
                 syntax::FUN_OP => self.lambda(args),
                 syntax::STR_OP => self.string(args),
+                syntax::LOAD_FN => self.load(args),
                 _ => Result::Err(format!("Function name '{}' not recognized.", func.as_str())),
             }
         } else {
@@ -225,4 +227,54 @@ pub fn expr_is_string(expr: &Expr, string: &str) -> bool {
         },
         _ => false,
     }
+}
+
+pub fn interpret_file(env: &mut Env, path: &String) -> Result<String, String> {
+    let text = fs::read_to_string(path.as_str())
+        .unwrap()
+        .parse()
+        .unwrap();
+
+    interpret_raw_text(env, &text)
+}
+
+pub fn interpret_raw_text(env: &mut Env, text: &String) -> Result<String, String> {
+    let mut failed = false;
+
+    let lines = lex::chunk_file(&text);
+
+    for line in lines {
+        let interpreter_failed = interpret_line(&line, env);
+        if interpreter_failed {
+            failed = true;
+            break;
+        }
+    }
+
+    // failed
+
+    Ok(String::from("hello"))
+}
+
+fn interpret_line(input: &String, env: &mut Env) -> bool {
+    let mut failed = false;
+
+    if input.len() > 0 {
+        let first_char = input.chars().next().unwrap();
+
+        if first_char != ';' {
+            let result = env.eval(input);
+
+            match result {
+                Ok(expr) => {
+                    failed = false;
+                }
+                Err(msg) => {
+                    failed = true;
+                }
+            };
+        }
+    }
+
+    failed
 }

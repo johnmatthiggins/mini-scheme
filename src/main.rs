@@ -32,7 +32,7 @@ fn main() {
         if arg.as_str() == "--repl"  || arg.as_str() == "-r" {
             repl_mode();
         } else {
-            interpreter_mode(&arg);
+            // interpreter_mode(&arg);
         }
     } else {
         repl_mode();
@@ -85,45 +85,15 @@ fn repl_mode() {
     }
 }
 
-fn interpret_line(input: &String, env: &mut Env) {
-    if input.len() > 0 {
-        let first_char = input.chars().next().unwrap();
+// fn interpreter_mode(path: &String) {
+//     let env = 
+//     let text = fs::read_to_string(path.as_str())
+//         .unwrap()
+//         .parse()
+//         .unwrap();
 
-        if first_char != ';' {
-            let result = env.eval(input);
-
-            // match result {
-            //     Ok(expr) => {
-            //         failed = false;
-            //         println!("{}", print_tree(&expr));
-            //     }
-            //     Err(msg) => {
-            //         failed = true;
-            //         println!("{}", &msg);
-            //     }
-            // };
-        }
-    }
-}
-
-fn interpreter_mode(path: &String) {
-    let text = fs::read_to_string(path.as_str())
-        .unwrap()
-        .parse()
-        .unwrap();
-
-    interpret_raw_text(&text);
-}
-
-fn interpret_raw_text(text: &String) {
-    let mut env: Env = Box::new(HashMap::new());
-
-    let lines = chunk_file(&text);
-
-    for line in lines {
-        interpret_line(&line, &mut env);
-    }
-}
+//     env::interpret_raw_text(&text);
+// }
 
 fn trim_newline(s: &mut String) -> String {
     let mut trimmed = s.clone();
@@ -136,33 +106,4 @@ fn trim_newline(s: &mut String) -> String {
     }
 
     trimmed
-}
-
-fn chunk_file(text: &String) -> Vec<String> {
-    let mut chunks: Vec<String> = Vec::new();
-    let mut chunk: String = String::new();
-    let mut nesting_level: u32 = 0;
-
-    for c in text.chars() {
-        if nesting_level > 0 || c == '(' {
-            if c == '\n' {
-                chunk.push(' ');
-            } else {
-                chunk.push(c);
-            }
-        } else if chunk.len() != 0 {
-            chunks.push(chunk.clone());
-            chunk.clear();
-        }
-
-        if c == '(' {
-            nesting_level += 1;
-        } else if c == ')' {
-            nesting_level -= 1;
-        }
-    }
-
-    // dbg!(&chunks);
-
-    chunks
 }

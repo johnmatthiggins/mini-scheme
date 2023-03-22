@@ -169,6 +169,35 @@ fn is_string(atom: &String) -> bool {
 //     return result;
 // }
 
+pub fn chunk_file(text: &String) -> Vec<String> {
+    let mut chunks: Vec<String> = Vec::new();
+    let mut chunk: String = String::new();
+    let mut nesting_level: u32 = 0;
+
+    for c in text.chars() {
+        if nesting_level > 0 || c == '(' {
+            if c == '\n' {
+                chunk.push(' ');
+            } else {
+                chunk.push(c);
+            }
+        } else if chunk.len() != 0 {
+            chunks.push(chunk.clone());
+            chunk.clear();
+        }
+
+        if c == '(' {
+            nesting_level += 1;
+        } else if c == ')' {
+            nesting_level -= 1;
+        }
+    }
+
+    // dbg!(&chunks);
+
+    chunks
+}
+
 fn tokenize(source: &String) -> Vec<String> {
     // keep count of open parenthesis
     // track whether we are in a string

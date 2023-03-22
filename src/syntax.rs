@@ -34,6 +34,7 @@ pub const SLURP_FN: &str = "slurp";
 pub const WRITE_FILE_FN: &str = "write";
 pub const PRINT_FN: &str = "print";
 pub const PRINTLN_FN: &str = "println";
+pub const LOAD_FN: &str = "load";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LambdaDef {
