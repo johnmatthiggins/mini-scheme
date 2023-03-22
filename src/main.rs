@@ -20,6 +20,7 @@ use std::env::args;
 use std::mem;
 use std::rc;
 use bigdecimal::BigDecimal;
+use rustyline::DefaultEditor;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const PROMPT: &str = "~> ";
@@ -34,7 +35,7 @@ fn main() {
             interpreter_mode(&arg);
         }
     } else {
-        panic!("Invalid arguments...");
+        repl_mode();
     }
 }
 
@@ -44,25 +45,15 @@ fn repl_mode() {
     // Holds all the predefined functions and values for REPL session.
     let mut env: Env = Box::new(HashMap::new());
     let mut failed = false;
+    let mut line_reader = rustyline::DefaultEditor::new().expect("REASON");
+
+    #[cfg(feature = "with-file-history")]
+    if line_reader.load_history(".lisp-history").is_err() {
+        println!("No previous history.");
+    }
 
     loop {
-        let mut input = String::new();
-
-        // Print prompt than promptly flush output to sync up.
-        if !failed {
-            print!("{}", PROMPT);
-        } else {
-            print!("{}", Red.paint(PROMPT).to_string());
-        }
-
-        io::stdout().flush().unwrap();
-
-        io::stdin()
-            .read_line(&mut input)
-            .ok()
-            .expect("User input could not be read...");
-
-        input = trim_newline(&mut input);
+        let input = line_reader.readline(PROMPT).expect("User input could not be read...");
 
         if input.len() > 0 {
             match input.as_str() {
@@ -71,6 +62,7 @@ fn repl_mode() {
                     break;
                 },
                 _ => {
+                    line_reader.add_history_entry(input.as_str());
                     let first_char = input.chars().next().unwrap();
 
                     if first_char != ';' {

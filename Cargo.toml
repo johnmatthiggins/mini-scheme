@@ -10,3 +10,4 @@ edition = "2018"
 [dependencies]
 bigdecimal = "0.3.0"
 ansi_term = "*"
+rustyline = "11.0.0"
