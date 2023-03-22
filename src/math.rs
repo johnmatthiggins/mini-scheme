@@ -10,6 +10,7 @@ pub trait MathOps {
     fn mul(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn div(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
     fn modulo(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
+    fn truncate(&mut self, args: &Vec<Expr>) -> Result<Expr, String>;
 }
 
 struct OpInfo {
@@ -164,6 +165,33 @@ impl MathOps for Env {
         } else {
             return Err("Incorrect argument count for '%' operator.".to_string());
         }
+    }
+
+    fn truncate(&mut self, args: &Vec<Expr>) -> Result<Expr, String> {
+        if args.len() == 1 {
+            self.simplify(&args[0])
+                .and_then(|x| match x {
+                    Expr::Atom(n) => Ok(n),
+                    _ => Err(String::from("Argument for 'truncate' is not a number."))
+                })
+                .and_then(|x| match *x {
+                    Atom::Number(n) => Ok(Expr::Atom(
+                            Box::new(Atom::Number(truncate_big_decimal(&n))))),
+                    _ => Err(String::from("Argument for 'truncate' is not a number."))
+                })
+        } else {
+            Err("Incorrect argument count for '%' operator.".to_string())
+        }
+    }
+}
+
+fn truncate_big_decimal(number: &BigDecimal) -> BigDecimal {
+    let rounded = number.round(0);
+
+    if rounded > *number {
+        rounded - BigDecimal::from(1)
+    } else {
+        rounded
     }
 }
 

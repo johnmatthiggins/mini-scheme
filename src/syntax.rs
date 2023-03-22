@@ -8,6 +8,7 @@ pub const SUB_OP: &str = "-";
 pub const MUL_OP: &str = "*";
 pub const DIV_OP: &str = "/";
 pub const MOD_OP: &str = "%";
+pub const TRUNCATE_OP: &str = "truncate";
 
 // built in keywords
 pub const CAR_OP: &str = "car";

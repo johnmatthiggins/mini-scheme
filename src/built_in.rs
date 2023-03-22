@@ -44,7 +44,8 @@ impl EnvPrimitives for Env {
             let file = &expr[0];
             let fileName = string_or_else(self, file);
 
-            fileName.and_then(|x| env::interpret_file(self, &trim_quotes(&x)))
+            fileName
+                .and_then(|x| env::interpret_file(self, &trim_quotes(&x)))
                 .map(|x| Expr::Atom(Box::new(Atom::StringLiteral(x))))
         }
     }
